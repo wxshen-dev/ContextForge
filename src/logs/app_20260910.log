@@ -1,0 +1,46 @@
+2026-09-10 16:20:00.737 | INFO     | __main__            :<module>       :157  - 【测试】logger.py内部调用（仅测试，业务模块调用会显示正确文件名）
+2026-09-10 16:20:00.752 | ERROR    | __main__            :<module>       :159  - 【测试】logger.py内部调用（仅测试，业务模块调用会显示正确文件名）
+2026-09-10 16:20:00.753 | ERROR    | __main__            :<module>       :167  - 【测试】捕获到业务异常，输出完整堆栈信息
+Traceback (most recent call last):
+
+> File "C:\Users\shena\Desktop\Agent_Project_github\ContextForge\src\app\core\logger.py", line 164, in <module>
+    result = 10 / 0
+
+ZeroDivisionError: division by zero
+2026-09-10 17:18:34.492 | INFO     | 04-test_graph_flow.py:<module>       :8    - ===== 开始测试 =====
+2026-09-10 17:18:34.560 | INFO     | _runnable.py        :invoke         :447  - [node_entry] 节点开始，追踪ID=-
+2026-09-10 17:18:34.562 | INFO     | _runnable.py        :invoke         :447  - [node_entry] 节点完成，追踪ID=-，耗时=2ms
+2026-09-10 17:18:34.563 | INFO     | 04-test_graph_flow.py:<module>       :16   - 节点: node_entry
+2026-09-10 17:18:34.564 | INFO     | _runnable.py        :invoke         :447  - [node_pdf_to_md] 节点开始，追踪ID=-
+2026-09-10 17:18:34.564 | INFO     | _runnable.py        :invoke         :447  - [node_pdf_to_md] 节点完成，追踪ID=-，耗时=0ms
+2026-09-10 17:18:34.565 | INFO     | 04-test_graph_flow.py:<module>       :16   - 节点: node_pdf_to_md
+2026-09-10 17:18:34.566 | INFO     | _runnable.py        :invoke         :447  - [node_md_img] 节点开始，追踪ID=-
+2026-09-10 17:18:34.566 | INFO     | _runnable.py        :invoke         :447  - [node_md_img] 节点完成，追踪ID=-，耗时=0ms
+2026-09-10 17:18:34.567 | INFO     | 04-test_graph_flow.py:<module>       :16   - 节点: node_md_img
+2026-09-10 17:18:34.567 | INFO     | _runnable.py        :invoke         :447  - [node_document_split] 节点开始，追踪ID=-
+2026-09-10 17:18:34.568 | INFO     | _runnable.py        :invoke         :447  - [node_document_split] 节点完成，追踪ID=-，耗时=1ms
+2026-09-10 17:18:34.569 | INFO     | 04-test_graph_flow.py:<module>       :16   - 节点: node_document_split
+2026-09-10 17:18:34.570 | INFO     | _runnable.py        :invoke         :447  - [node_item_name_recognition] 节点开始，追踪ID=-
+2026-09-10 17:18:34.570 | INFO     | _runnable.py        :invoke         :447  - [node_item_name_recognition] 节点完成，追踪ID=-，耗时=0ms
+2026-09-10 17:18:34.571 | INFO     | 04-test_graph_flow.py:<module>       :16   - 节点: node_item_name_recognition
+2026-09-10 17:18:34.572 | INFO     | _runnable.py        :invoke         :447  - [node_bge_embedding] 节点开始，追踪ID=-
+2026-09-10 17:18:34.572 | INFO     | _runnable.py        :invoke         :447  - [node_bge_embedding] 节点完成，追踪ID=-，耗时=0ms
+2026-09-10 17:18:34.573 | INFO     | 04-test_graph_flow.py:<module>       :16   - 节点: node_bge_embedding
+2026-09-10 17:18:34.573 | INFO     | _runnable.py        :invoke         :447  - [node_import_milvus] 节点开始，追踪ID=-
+2026-09-10 17:18:34.574 | INFO     | _runnable.py        :invoke         :447  - [node_import_milvus] 节点完成，追踪ID=-，耗时=1ms
+2026-09-10 17:18:34.574 | INFO     | 04-test_graph_flow.py:<module>       :16   - 节点: node_import_milvus
+2026-09-10 17:18:34.575 | INFO     | 04-test_graph_flow.py:<module>       :20   - 最终状态: {
+    "task_id": "",
+    "is_md_read_enabled": false,
+    "is_pdf_read_enabled": true,
+    "local_dir": "",
+    "local_file_path": "万用表RS-12的使用.pdf",
+    "file_title": "",
+    "pdf_path": "",
+    "md_path": "",
+    "md_content": "",
+    "chunks": [],
+    "item_name": "",
+    "embeddings_content": []
+}
+2026-09-10 17:18:34.575 | INFO     | 04-test_graph_flow.py:<module>       :22   - 图结构:
