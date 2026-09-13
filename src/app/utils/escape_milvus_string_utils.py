@@ -1,24 +1,27 @@
-# ===================== 核心辅助函数 =====================
+# ===================== Core Helper Functions =====================
 def escape_milvus_string(value: str) -> str:
     """
-    Milvus过滤表达式专用字符串安全转义函数
-    核心作用：
-        避免因原始字符串含特殊字符，导致Milvus解析filter_expr时报错，保证CRUD操作正常执行
-    转义规则：
-        1. 反斜杠（\）→ 双反斜杠（\\）：Milvus表达式转义规则
-        2. 双引号（"）→ 转义双引号（\"）：避免截断字符串表达式
-        3. 换行/回车/制表符 → 空格：防止表达式换行导致解析失败
-    参数：
-        value: 需要转义的原始字符串（如商品名称、文件标题）
-    返回：
-        str: 转义后的安全字符串，可直接用于Milvus的filter_expr
+    Escape strings for Milvus filter expressions.
+    This prevents special characters in raw values from breaking filter_expr
+    parsing and keeps CRUD operations reliable.
+
+    Escaping rules:
+        1. Backslash (\\) -> double backslash (\\\\)
+        2. Double quote (") -> escaped double quote (\\")
+        3. Newlines, carriage returns, and tabs -> spaces
+
+    Args:
+        value: Raw string to escape, such as an item name or file title.
+
+    Returns:
+        Safe string that can be used directly in a Milvus filter_expr.
     """
     if value is None:
         return ""
-    # 确保输入为字符串类型，避免非字符串值报错
+    # Convert input to string to avoid errors from non-string values.
     s = str(value)
-    # 按Milvus规则转义特殊字符
+    # Escape special characters according to Milvus expression rules.
     s = s.replace("\\", "\\\\").replace('"', '\\"')
-    # 替换换行/回车/制表符为空格，保证表达式单行有效
+    # Keep the expression on a single valid line.
     s = s.replace("\r", " ").replace("\n", " ").replace("\t", " ")
     return s

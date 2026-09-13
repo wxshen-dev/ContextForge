@@ -7,4 +7,4 @@ snapshot_download(
     cache_dir=local_dir,
 )
 
-print("下载完成，模型目录：", local_dir)
+print("Download completed. Model directory:", local_dir)

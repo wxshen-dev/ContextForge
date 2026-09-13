@@ -34,4 +34,5 @@ dist/
 *.egg-info/
 
 # Local RAG documents / knowledge base
-src/doc/
+doc/
+output/

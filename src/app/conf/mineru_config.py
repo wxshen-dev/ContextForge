@@ -1,14 +1,14 @@
-# 导入核心依赖：数据类、环境变量读取、路径处理
+# Core dependencies: dataclasses, environment variables, and path handling.
 from dataclasses import dataclass
 import os
 from dotenv import load_dotenv
 
-# 提前加载.env配置文件（必须在读取环境变量前执行，确保os.getenv能获取到值）
-# 若.env不在项目根目录，可指定路径：load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+# Load .env before reading environment variables.
+# If .env is not in the project root, pass an explicit dotenv_path.
 load_dotenv()
 
 
-# 定义minerU服务配置
+# MinerU service configuration.
 @dataclass
 class MineruConfig:
     base_url: str

@@ -1,22 +1,23 @@
 import numpy as np
 def normalize_sparse_vector(sparse_vec):
     """
-    对稀疏向量做 L2 归一化（仅处理非零维度，不影响零维度）
-    :param sparse_vec: 原始稀疏向量（dict 格式：{维度: 数值}）
-    :return: 归一化后的稀疏向量
+    Apply L2 normalization to a sparse vector.
+    Only non-zero dimensions are processed; zero dimensions are unaffected.
+    :param sparse_vec: Original sparse vector in dict format: {dimension: value}
+    :return: Normalized sparse vector
     """
-    if not sparse_vec:  # 空向量直接返回
+    if not sparse_vec:  # Return empty vectors as-is.
         return sparse_vec
 
-    # 提取非零维度的数值
+    # Extract values from non-zero dimensions.
     values = np.array(list(sparse_vec.values()), dtype=np.float64)
-    # 计算 L2 范数（避免除以 0）
+    # Compute the L2 norm and guard against division by zero.
     l2_norm = np.linalg.norm(values)
-    if l2_norm < 1e-9:  # 范数接近 0 时，直接返回原向量（避免除零错误）
+    if l2_norm < 1e-9:  # Return near-zero vectors as-is.
         return sparse_vec
 
-    # 归一化：每个数值除以 L2 范数
+    # Normalize each value by the L2 norm.
     normalized_values = values / l2_norm
-    # normalized_values = (values / l2_norm).astype(np.float32)  # 统一转为 float32
-    # 重建稀疏向量 dict
+    # normalized_values = (values / l2_norm).astype(np.float32)  # Convert uniformly to float32.
+    # Rebuild the sparse vector dict.
     return dict(zip(sparse_vec.keys(), normalized_values))

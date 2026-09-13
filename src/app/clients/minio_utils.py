@@ -1,95 +1,90 @@
-# 导入Python内置模块
+# Python standard-library imports.
 import os
 import json
 
-# 导入MinIO官方Python SDK核心类（用于MinIO对象存储的客户端操作）
+# MinIO official Python SDK client.
 from minio import Minio
 
-# 导入项目内部配置与日志工具
-from app.conf.minio_config import minio_config  # MinIO相关配置（端点、密钥、桶名等）
-from app.core.logger import logger            # 项目统一日志工具
+# Project configuration and logging utilities.
+from app.conf.minio_config import minio_config  # MinIO settings.
+from app.core.logger import logger            # Project-wide logger.
 
-# 全局MinIO客户端实例（单例模式，避免重复创建连接，提升性能）
+# Global MinIO client singleton.
 _minio_client = None
 
 
-# 1. 定义MinIO客户端连接创建函数（私有函数，仅内部调用）
+# 1. Create a MinIO client connection.
 def _create_minio_client() -> Minio:
     """
-    创建并返回MinIO客户端连接
-    核心作用：读取配置文件中的MinIO参数，初始化客户端连接
-    :return: 初始化完成的MinIO客户端对象
+    Create and return a MinIO client connection.
+    :return: Initialized MinIO client.
     """
     return Minio(
-        endpoint=minio_config.endpoint,        # MinIO服务端点（IP:端口）
-        access_key=minio_config.access_key,    # MinIO访问密钥
-        secret_key=minio_config.secret_key,    # MinIO秘密密钥
-        secure=minio_config.minio_secure       # 是否启用HTTPS（True/False）
+        endpoint=minio_config.endpoint,        # MinIO endpoint.
+        access_key=minio_config.access_key,    # MinIO access key.
+        secret_key=minio_config.secret_key,    # MinIO secret key.
+        secure=minio_config.minio_secure       # Whether to enable HTTPS.
     )
 
 
-# 2. 定义桶访问策略生成函数（私有函数，仅内部调用）
+# 2. Build the bucket access policy.
 def _set_bucket_policy(bucket_name: str) -> str:
     """
-    生成MinIO桶的访问策略字符串（JSON格式）
-    核心策略：允许所有用户（Principal: "*"）对桶内所有对象执行读取操作（s3:GetObject）
-    适配场景：图片上传后需公开访问（如MD中图片在线URL）
-    :param bucket_name: 目标桶名
-    :return: 序列化后的JSON格式访问策略字符串
+    Generate a MinIO bucket access policy as a JSON string.
+    The policy allows public read access to all objects in the bucket.
+    :param bucket_name: Target bucket name.
+    :return: Serialized JSON access policy.
     """
-    # 策略模板（遵循AWS S3策略规范，MinIO兼容该规范）
+    # Policy template following the AWS S3 policy format supported by MinIO.
     policy = {
-        "Version": "2012-10-17",  # 策略版本（固定值，兼容S3标准）
+        "Version": "2012-10-17",  # Fixed policy version compatible with S3.
         "Statement": [
             {
-                "Effect": "Allow",  # 策略效果：允许访问
-                "Principal": {"AWS": ["*"]},  # 授权对象：所有用户
-                "Action": ["s3:GetObject"],  # 授权操作：读取桶内对象
-                "Resource": [f"arn:aws:s3:::{bucket_name}/*"],  # 授权范围：桶内所有对象
+                "Effect": "Allow",  # Allow access.
+                "Principal": {"AWS": ["*"]},  # All users.
+                "Action": ["s3:GetObject"],  # Read objects in the bucket.
+                "Resource": [f"arn:aws:s3:::{bucket_name}/*"],  # All objects in the bucket.
             }
         ],
     }
-    # 将字典策略序列化为JSON字符串，供MinIO设置使用
+    # Serialize the policy dict for MinIO.
     return json.dumps(policy)
 
 
-# 3. 定义桶初始化函数（私有函数，仅内部调用）
+# 3. Ensure the bucket exists and is ready.
 def _create_bucket_ready(client: Minio):
     """
-    检查MinIO桶是否存在，不存在则创建，并设置访问策略
-    核心作用：确保图片上传所需的桶已就绪，避免上传失败
-    :param client: 已初始化的MinIO客户端对象
+    Check whether the MinIO bucket exists, create it if needed, and set its policy.
+    :param client: Initialized MinIO client.
     """
-    bucket_name = minio_config.bucket_name  # 从配置中获取目标桶名
-    # 检查桶是否存在
+    bucket_name = minio_config.bucket_name  # Target bucket from configuration.
+    # Check whether the bucket exists.
     if not client.bucket_exists(bucket_name):
-        client.make_bucket(bucket_name)  # 不存在则创建桶
-        # 为新桶设置访问策略（允许公开读取，适配图片在线访问需求）
+        client.make_bucket(bucket_name)  # Create the bucket when missing.
+        # Allow public read access for uploaded image URLs.
         client.set_bucket_policy(bucket_name, _set_bucket_policy(bucket_name))
-        logger.info(f"MinIO桶 {bucket_name} 已创建，并设置访问策略")
+        logger.info(f"MinIO bucket {bucket_name} was created and its access policy was set.")
     else:
-        # 桶已存在，仅打印日志，不重复操作
-        logger.info(f"MinIO桶 {bucket_name} 已存在，无需重复创建")
+        # The bucket already exists; do not repeat setup.
+        logger.info(f"MinIO bucket {bucket_name} already exists; setup skipped.")
 
 
 def get_minio_client() -> Minio:
     """
-    获取全局MinIO客户端（懒加载模式，无锁版本，适配单线程场景）
-    核心逻辑：
-    1. 首次调用：初始化客户端 + 检查/创建桶 + 设置策略，将客户端实例赋值给全局变量
-    2. 后续调用：直接复用全局客户端实例，避免重复创建连接（提升性能、节省资源）
-    :return: 全局唯一的MinIO客户端对象
+    Get the global MinIO client using lazy loading.
+    The first call initializes the client and bucket. Later calls reuse the singleton.
+    :return: Global MinIO client instance.
     """
-    # 声明使用全局变量（修改全局变量需显式声明）
+    # Explicitly use the global singleton.
     global _minio_client
 
-    # 懒加载：仅在客户端未初始化时执行创建逻辑
+    # Lazy-load only when the client has not been initialized.
     if _minio_client is None:
-        logger.info("开始初始化MinIO客户端（首次调用，执行懒加载）")
-        client = _create_minio_client()          # 创建客户端连接
-        _create_bucket_ready(client)             # 检查并初始化桶
-        _minio_client = client                   # 赋值给全局变量，供后续复用
-        logger.info("MinIO客户端初始化完成，已就绪可使用")
+        logger.info("Initializing MinIO client for the first time.")
+        client = _create_minio_client()          # Create the client connection.
+        _create_bucket_ready(client)             # Check and initialize the bucket.
+        _minio_client = client                   # Store the singleton for later reuse.
+        logger.info("MinIO client initialized and ready.")
 
-    # 复用全局客户端实例，直接返回
+    # Return the reusable global client instance.
     return _minio_client

@@ -6,11 +6,11 @@ from app.import_process.agent.state import ImportGraphState
 @node_log("node_bge_embedding")
 def node_bge_embedding(state: ImportGraphState) -> ImportGraphState:
     """
-    节点: 向量化 (node_bge_embedding)
-    为什么叫这个名字: 使用 BGE-M3 模型将文本转换为向量 (Embedding)。
-    未来要实现:
-    1. 加载 BGE-M3 模型。
-    2. 对每个 Chunk 的文本进行 Dense (稠密) 和 Sparse (稀疏) 向量化。
-    3. 准备好写入 Milvus 的数据格式。
+    Node: Embedding generation (node_bge_embedding).
+    This node uses the BGE-M3 model to convert text into embeddings.
+    Planned implementation:
+    1. Load the BGE-M3 model.
+    2. Generate dense and sparse vectors for each chunk.
+    3. Prepare the data format required for writing to Milvus.
     """
     return state

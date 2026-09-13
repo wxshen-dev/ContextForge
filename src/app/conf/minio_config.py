@@ -1,24 +1,24 @@
-# 导入核心依赖：数据类、环境变量读取、路径处理
+# Core dependencies: dataclasses, environment variables, and path handling.
 from dataclasses import dataclass
 import os
 from dotenv import load_dotenv
 
-# 提前加载.env配置文件（确保os.getenv能获取到MinIO相关配置）
+# Load .env before reading MinIO-related configuration.
 load_dotenv()
 
 
-# 定义MinIO对象存储服务配置（与LLMConfig风格一致，字段对应.env配置项）
+# MinIO object-storage configuration.
 @dataclass
 class MinIOConfig:
-    endpoint: str    # MinIO服务地址（含http/https和端口）
-    access_key: str  # MinIO访问密钥（对应MINIO_ACCESS_KEY）
-    secret_key: str  # MinIO秘钥（对应MINIO_SECRET_KEY）
-    bucket_name: str # MinIO默认存储桶名（知识库文件专用）
-    minio_img_dir: str #Minio存储图片的文件夹
-    minio_secure: bool # 是否使用ssl加密 http 还是 https
+    endpoint: str    # MinIO endpoint, including protocol and port.
+    access_key: str  # MinIO access key from MINIO_ACCESS_KEY.
+    secret_key: str  # MinIO secret key from MINIO_SECRET_KEY.
+    bucket_name: str # Default MinIO bucket for knowledge-base files.
+    minio_img_dir: str # MinIO directory for storing images.
+    minio_secure: bool # Whether to use SSL, choosing HTTPS instead of HTTP.
 
 
-# 实例化MinIO配置对象，自动从.env读取配置并绑定
+# Instantiate the MinIO config object from .env values.
 minio_config = MinIOConfig(
     endpoint=os.getenv("MINIO_ENDPOINT"),
     access_key=os.getenv("MINIO_ACCESS_KEY"),
