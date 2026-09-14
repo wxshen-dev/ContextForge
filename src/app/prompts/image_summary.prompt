@@ -1,0 +1,2 @@
+This is an image from the "{root_folder}" file. The text before the image is "{image_content[0]}",
+and the text after the image is "{image_content[1]}". Briefly summarize the image content in English for use as the Markdown image title. Keep it within 50 words.
