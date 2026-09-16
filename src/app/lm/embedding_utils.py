@@ -1,3 +1,5 @@
+import os
+
 from pymilvus.model.hybrid import BGEM3EmbeddingFunction
 from app.core.logger import logger
 from app.conf.embedding_config import embedding_config
@@ -19,6 +21,10 @@ def get_bge_m3_ef():
     # Load configuration from the environment, falling back to the default model.
     # A local path can be used when available; otherwise "BAAI/bge-m3" will download automatically.
     model_name = embedding_config.bge_m3_path or "BAAI/bge-m3"
+    logger.info(f"BGE model_name = {model_name}")
+    logger.info(f"BGE path exists = {os.path.exists(model_name)}")
+    logger.info(f"BGE path isdir = {os.path.isdir(model_name)}")
+
     device = embedding_config.bge_device or "cpu"
     use_fp16 = embedding_config.bge_fp16 or False
 

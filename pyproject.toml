@@ -15,10 +15,17 @@ dependencies = [
     "langgraph>=1.2.11",
     "loguru>=0.7.3",
     "minio>=7.2.20",
+    "modelscope>=1.40.1",
     "pydantic>=2.13.5",
     "pydantic-settings>=2.15.0",
+    "pymilvus[model]>=3.0.1",
     "python-dotenv>=1.2.3",
+    "transformers>=5.17.0",
     "uvicorn>=0.52.4",
+    "flagembedding>=v1.3.5",
+    "torch>=2.10.0",
+    "torchvision>=0.25.0",
+    "torchaudio>=2.10.0",
 ]
 
 [project.scripts]
@@ -30,3 +37,14 @@ build-backend = "uv_build"
 
 [tool.uv.build-backend]
 module-name = "app"
+
+[tool.uv.sources]
+# 强制从 NVIDIA 源安装
+torch = { index = "pytorch-cuda" }
+torchvision = { index = "pytorch-cuda" }
+torchaudio = { index = "pytorch-cuda" }
+
+[[tool.uv.index]]
+name = "pytorch-cuda"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
