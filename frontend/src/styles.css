@@ -642,6 +642,9 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
   gap:13px;
   margin-bottom:28px
 }
+.message-row.user {
+  justify-content:flex-end
+}
 .message-avatar {
   height:31px;
   width:31px;
@@ -654,15 +657,16 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
   background:#e2f1ed;
   color:#177d76
 }
-.message-avatar.user {
-  background:#eaf0f2;
-  color:#516f79;
-  font-weight:800;
-  font-size:9px
-}
 .message-body {
   min-width:0;
   flex:1
+}
+.message-row.user .message-body {
+  flex:0 1 auto;
+  max-width:75%;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end
 }
 .message-meta {
   font-size:11px;
@@ -672,13 +676,14 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 }
 .user-message {
   display:inline-block;
-  background:#f2f6f6;
-  border-radius:3px 12px 12px 12px;
+  background:#e6f3f1;
+  border-radius:12px 3px 12px 12px;
   padding:12px 16px;
   max-width:100%;
   line-height:1.6;
   font-size:13px;
-  white-space:pre-wrap
+  white-space:pre-wrap;
+  overflow-wrap:anywhere
 }
 .assistant-answer {
   max-width:720px;
@@ -937,6 +942,9 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
   }
   .message-row {
     gap:9px
+  }
+  .message-row.user .message-body {
+    max-width:88%
   }
   .message-avatar {
     height:28px;

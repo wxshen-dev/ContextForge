@@ -1,48 +1,54 @@
-# ContextForge
+<p align="center">
+  <img src="./assets/readme/contextforge-overview.svg" width="100%" alt="ContextForge turns PDF and Markdown documents into searchable passages and grounded answers with visible processing steps">
+</p>
 
-Import reference documents, then ask questions against them in a browser. ContextForge combines a React and TypeScript frontend with two FastAPI services. It turns PDF and Markdown files into a searchable knowledge base and shows each step as it builds an answer.
+**ContextForge** is a local document Q&A workspace. Import PDF or Markdown, watch each indexing step, and ask questions in a React chat interface that shows how an answer was produced.
 
-![ContextForge chat answering a question from an imported document](docs/screenshots/chat-accepted.png)
+**Stack:** React + TypeScript + Vite · FastAPI + LangGraph · Milvus + MongoDB + MinIO
 
-The chat [streams answers and processing activity](docs/screenshots/chat-processing.png), keeps conversation history, and lets you [inspect the completed steps](docs/screenshots/chat-progress-expanded.png). The separate [import workspace](docs/screenshots/import-accepted.png) shows the status of each document.
+## See it work
 
-## What you can do
+This is a real browser run against the included Atlas M42 sample document. The answer came from the imported document; the chat can also show [live processing](docs/screenshots/chat-processing.png) and [all completed steps](docs/screenshots/chat-progress-expanded.png).
 
-- **Build a knowledge base.** Import Markdown or PDF, process document images, split text into passages, and index dense and sparse BGE-M3 vectors in Milvus.
-- **Ask grounded questions.** Find relevant passages, combine retrieval results, optionally include web search results, rerank matches, and generate an answer with an OpenAI-compatible model.
-- **Follow the work.** Watch import activity and streamed answer progress in the browser. MongoDB restores conversation history when you return.
+![ContextForge React chat showing a user question on the right and a grounded answer on the left](docs/screenshots/chat-accepted.png)
 
-The import and query services run independently, so document processing does not block the chat interface.
+The [import view](docs/screenshots/import-accepted.png) tracks each document through upload, extraction, splitting, embedding, and indexing.
+
+## Try the sample
+
+1. Start the services using [Quick start](#quick-start).
+2. Upload [the Atlas M42 Markdown file](tests/fixtures/atlas-m42.md) at `http://127.0.0.1:5173/import` and wait for **Completed**.
+3. Open `http://127.0.0.1:5173/chat` and ask:
+
+   > How do I measure DC voltage with the Atlas M42?
+
+The answer should mention **COM**, **VΩ**, **DC V**, probes placed **in parallel**, and the **600 V** maximum DC range. Expand the answer's progress row to see the seven query steps. Refresh the chat to see the conversation restored from MongoDB.
+
+This Markdown flow was verified in a browser with the local Docker stack: the file was indexed in Milvus and the conversation was read back from MongoDB. PDF import additionally requires MinerU.
 
 ## Quick start
 
-These commands use Windows PowerShell from the repository root. You need Python 3.12+, [uv](https://docs.astral.sh/uv/), Node.js 22.12+ and npm, Docker Desktop, and an OpenAI-compatible model endpoint. The first installation downloads sizable Python and model dependencies.
+These commands use Windows PowerShell from the repository root. Install Python 3.12+, [uv](https://docs.astral.sh/uv/), Node.js 22.12+ with npm, and Docker Desktop. You also need an OpenAI-compatible model endpoint. The first run downloads Python dependencies and may download BGE-M3 if no local model path is configured.
 
-1. Install the Python environment and create a local configuration file:
+1. Install dependencies and copy the example configuration:
 
    ```powershell
    uv sync --locked
    Copy-Item .env.example .env
-   ```
-
-2. Edit `.env`. Set `OPENAI_BASE_URL`, `OPENAI_API_KEY`, and `LLM_DEFAULT_MODEL` for your model endpoint. Keep `LLM_DEFAULT_TEMPERATURE` numeric. Set `BGE_M3_PATH` to a local BGE-M3 model directory, or leave it empty to let the embedding library download `BAAI/bge-m3` on first use. `BGE_DEVICE=cpu` is the default; use a working CUDA device if available. The storage addresses in `.env.example` already match the local Docker stack.
-
-3. Start MongoDB, MinIO, and Milvus:
-
-   ```powershell
-   docker compose -f compose.local.yml up -d mongo minio milvus
-   docker compose -f compose.local.yml ps
-   ```
-
-4. Install the frontend dependencies:
-
-   ```powershell
    cd frontend
    npm ci
    cd ..
    ```
 
-5. Start each application service in its own terminal:
+2. Edit `.env`: set `OPENAI_BASE_URL`, `OPENAI_API_KEY`, and `LLM_DEFAULT_MODEL`. Keep `LLM_DEFAULT_TEMPERATURE` numeric. Set `BGE_M3_PATH` to a local BGE-M3 directory, or leave it blank to download `BAAI/bge-m3`. The example storage addresses match the local Docker stack.
+
+3. Start the databases and object store:
+
+   ```powershell
+   docker compose -f compose.local.yml up -d mongo minio milvus
+   ```
+
+4. Start the three application processes in separate terminals:
 
    ```powershell
    uv run contextforge import
@@ -52,69 +58,56 @@ These commands use Windows PowerShell from the repository root. You need Python 
    uv run contextforge query
    ```
 
-6. Start the React development server in a third terminal:
-
    ```powershell
    cd frontend
    npm run dev
    ```
 
-Open the [import workspace](http://127.0.0.1:5173/import), then the [chat workspace](http://127.0.0.1:5173/chat). Vite forwards import requests to port `8000` and query requests to port `8001`. Run `uv run contextforge --help` to see the backend `--host` and `--port` options.
+Open the [import page](http://127.0.0.1:5173/import) or [chat page](http://127.0.0.1:5173/chat). Vite forwards import requests to port `8000` and query requests to port `8001`.
 
-For a built frontend, run `npm run build` in `frontend/`, then start or restart the query service. It serves the React app at [localhost:8001/import](http://127.0.0.1:8001/import) and [localhost:8001/chat](http://127.0.0.1:8001/chat). The import API remains on port `8000`. Set `VITE_IMPORT_API_URL` and `VITE_QUERY_API_URL` at build time if the APIs use other origins; the development server uses its local proxies by default. The old `/import.html` and `/chat.html` URLs redirect to the new routes.
+### Built frontend
 
-### Try a document end to end
-
-Upload [the sample Atlas M42 document](tests/fixtures/atlas-m42.md) in the import workspace and wait for **Completed**. Then ask:
-
-> How do I measure DC voltage with the Atlas M42?
-
-A grounded answer should mention the black lead in **COM**, the red lead in **VΩ**, the **DC V** setting, probes placed **in parallel**, and the **600 V** maximum DC range. Expand the answer's completion line to review the processing steps. Refresh the chat page to confirm the conversation loads from MongoDB.
-
-This Markdown import and question flow was verified in a real browser against the local Docker stack. The sample document was indexed in Milvus, the query returned an answer based on that document, and the conversation was read back from MongoDB.
-
-![Completed Atlas M42 Markdown import in the browser](docs/screenshots/import-accepted.png)
-
-## Configuration
-
-Copy `.env.example` rather than editing it. `.env` is ignored by Git.
-
-| Setting | Purpose |
-| --- | --- |
-| `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `LLM_DEFAULT_MODEL` | OpenAI-compatible endpoint, credential, and model used for extraction and answers. |
-| `BGE_M3_PATH`, `BGE_DEVICE` | Local embedding model path and execution device. A blank path triggers a model download on first use. |
-| `BGE_RERANKER_LARGE` | Optional local reranker model path. The query continues with its initial ordering if the reranker cannot load. |
-| `MONGO_URL`, `MILVUS_URL` | Conversation storage and vector database addresses. |
-| `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY` | Document and image storage. The example credentials are for local development. |
-| `MINERU_BASE_URL`, `MINERU_API_TOKEN` | Required when importing PDF files; Markdown imports do not need MinerU. |
-| `MCP_DASHSCOPE_BASE_URL` | Optional web-search MCP endpoint. Without it, answers use local document results. |
-
-The local Compose file publishes MongoDB on `127.0.0.1:27017`, the application MinIO API on `127.0.0.1:39000` (console: `39001`), and Milvus on `127.0.0.1:39530`. Docker volumes preserve data between restarts. Stop the stack with `docker compose -f compose.local.yml down`.
+Run `npm run build` in `frontend/`, then start or restart the query service. FastAPI serves the built React app at `http://127.0.0.1:8001/import` and `http://127.0.0.1:8001/chat`; the import API stays on port `8000`. If your APIs use other origins, set `VITE_IMPORT_API_URL` and `VITE_QUERY_API_URL` when building. The old `/import.html` and `/chat.html` URLs redirect to the React routes.
 
 ## How it works
 
-**Import:** upload a document → convert PDF to Markdown when needed → process images → split passages → identify product names → embed text → write vectors to Milvus.
+- **Import:** upload → convert PDF when needed → process images → split passages → identify products → generate BGE-M3 vectors → store them in Milvus.
+- **Ask:** identify the product → search passages and optional web results → combine and rerank results → generate a streamed answer. MongoDB stores the conversation for later visits.
 
-**Query:** identify the product in the question → search document passages and optional web results → combine and rerank matches → generate and stream the answer. MongoDB stores user and assistant messages for later turns.
+The React application is in [`frontend/src`](frontend/src). The two FastAPI services and LangGraph workflows are in [`src/app/import_process`](src/app/import_process) and [`src/app/query_process`](src/app/query_process). The browser remembers import task IDs across navigation and reloads; the import API supplies their current status.
 
-The React and TypeScript frontend lives under [`frontend/src`](frontend/src). Shared navigation, upload activity, conversation history, and streamed answer progress are React components. The browser remembers import task IDs locally so the activity list survives navigation and reloads; the import service remains the source of truth for task status. Vite provides the development server and builds static assets for the query service to serve. The Python code lives under [`src/app`](src/app): `import_process` and `query_process` contain their respective LangGraph workflows and FastAPI services, while `clients` contains the storage integrations.
+## Configuration
+
+`.env` is ignored by Git. Copy `.env.example` and set only the integrations you use.
+
+| Setting | Purpose |
+| --- | --- |
+| `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `LLM_DEFAULT_MODEL` | OpenAI-compatible endpoint and model for extraction and answers. |
+| `BGE_M3_PATH`, `BGE_DEVICE` | Embedding model path and device; blank path downloads the model on first use. |
+| `BGE_RERANKER_LARGE` | Optional local reranker; query continues with its initial ordering if unavailable. |
+| `MONGO_URL`, `MILVUS_URL` | Conversation history and vector search. |
+| `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY` | Document and image storage. |
+| `MINERU_BASE_URL`, `MINERU_API_TOKEN` | PDF conversion; not needed for Markdown import. |
+| `MCP_DASHSCOPE_BASE_URL` | Optional web-search MCP endpoint. |
+
+The Compose stack publishes MongoDB on `127.0.0.1:27017`, MinIO on `127.0.0.1:39000` (console: `39001`), and Milvus on `127.0.0.1:39530`. Docker volumes retain data. Stop the stack with `docker compose -f compose.local.yml down`.
 
 ## HTTP API
 
-Each service exposes interactive API documentation at `/docs` on its own port.
+Each FastAPI service exposes interactive documentation at `/docs` on its own port.
 
 | Service | Endpoint | Purpose |
 | --- | --- | --- |
-| Import | `POST /upload` | Upload one or more PDF or Markdown files as multipart `files`. |
-| Import | `GET /status/{task_id}` | Read an import task's status and steps. |
-| Query | `GET /health` | Check that the HTTP service is running. |
-| Query | `POST /query` | Ask a question with `query`, optional `session_id`, and `is_stream`. |
-| Query | `GET /stream/{session_id}` | Receive progress and answer events for a streamed query. |
-| Query | `GET /status/{session_id}` | Read query progress and the latest answer. |
-| Query | `GET /history/{session_id}` | Load recent conversation messages. |
+| Import | `POST /upload` | Upload PDF or Markdown files as multipart `files`. |
+| Import | `GET /status/{task_id}` | Read import status and steps. |
+| Query | `GET /health` | Check service health. |
+| Query | `POST /query` | Ask with `query`, optional `session_id`, and `is_stream`. |
+| Query | `GET /stream/{session_id}` | Receive streamed progress and answer events. |
+| Query | `GET /status/{session_id}` | Read query status and latest answer. |
+| Query | `GET /history/{session_id}` | Load conversation messages. |
 | Query | `DELETE /history/{session_id}` | Clear a conversation. |
 
-For a direct request without streaming:
+A direct request without streaming:
 
 ```powershell
 $body = @{ query = 'How do I measure voltage?'; is_stream = $false } | ConvertTo-Json
@@ -123,14 +116,14 @@ Invoke-RestMethod -Uri http://127.0.0.1:8001/query -Method Post -ContentType 'ap
 
 ## Current scope
 
-- PDF conversion needs a configured MinerU service. The browser acceptance above exercises Markdown import.
-- Web search is optional and needs an MCP endpoint. Knowledge-graph querying is not connected to the current answer workflow.
-- The included services are configured for local development and do not implement user authentication.
+- PDF conversion needs a configured MinerU service. The verified sample uses Markdown.
+- Web search requires an MCP endpoint. Knowledge-graph querying is not connected to the current answer workflow.
+- The local services do not include user authentication.
 
 ## Troubleshooting
 
 | Symptom | Check |
 | --- | --- |
-| A service fails during startup | Set the model endpoint values in `.env` and keep `LLM_DEFAULT_TEMPERATURE` numeric. |
-| Import or search cannot reach storage | Run `docker compose -f compose.local.yml ps` and compare the addresses in `.env` with the ports above. |
-| PDF import fails while Markdown works | Configure `MINERU_BASE_URL` and `MINERU_API_TOKEN` before retrying the PDF. |
+| A service fails on startup | Verify the model endpoint settings and numeric `LLM_DEFAULT_TEMPERATURE` in `.env`. |
+| Import or search cannot reach storage | Run `docker compose -f compose.local.yml ps` and compare the local addresses above with `.env`. |
+| PDF import fails while Markdown works | Configure `MINERU_BASE_URL` and `MINERU_API_TOKEN`. |
