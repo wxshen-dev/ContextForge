@@ -1,0 +1,5 @@
+Write a concise, factual example answer to the following question for retrieval purposes. Include the key technical terms an authoritative document would contain. Do not mention that this is a hypothetical answer. Write in the same language as the question and keep it under 300 words.
+
+Question: {rewritten_query}
+
+Example answer:

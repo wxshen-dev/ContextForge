@@ -1,6 +1,7 @@
 # Environment variables
 .env
 .env.*
+!.env.example
 
 # Python
 __pycache__/
@@ -36,3 +37,9 @@ dist/
 # Local RAG documents / knowledge base
 doc/
 output/
+
+# Local runtime data and planning notes
+src/logs/
+volumes/
+.uv-cache/
+IMPLEMENTATION_ROADMAP.md

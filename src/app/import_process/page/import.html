@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文件导入服务</title>
+    <title>Knowledge Base Import</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -105,7 +105,7 @@
         .status-completed { background-color: #2ecc71; }
         .status-error { background-color: #e74c3c; }
         
-        /* 简单的进度条 */
+        /* Upload progress */
         .progress-bar-container {
             width: 100%;
             height: 4px;
@@ -122,7 +122,7 @@
             transition: width 0.3s, background-color 0.3s;
         }
 
-        /* 任务日志（可展开/收起） */
+        /* Expandable task logs */
         .log-details {
             margin-top: 8px;
             font-size: 12px;
@@ -146,16 +146,16 @@
 <body>
 
 <div class="container">
-    <h1>📄 知识库文件导入</h1>
+    <h1>📄 Knowledge Base Import</h1>
     
     <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
         <div class="upload-icon">☁️</div>
-        <p>点击或拖拽文件到此处 (PDF/MD)</p>
+        <p>Click or drop files here (PDF/MD)</p>
         <input type="file" id="fileInput" class="file-input" multiple accept=".pdf,.md">
     </div>
 
     <div id="fileList" class="file-list">
-        <!-- 文件列表将在这里生成 -->
+        <!-- Uploaded files appear here. -->
     </div>
 </div>
 
@@ -164,8 +164,7 @@
     const fileInput = document.getElementById('fileInput');
     const fileList = document.getElementById('fileList');
     
-    // 模拟后端API地址
-    const API_BASE = 'http://127.0.0.1:8001';
+    const API_BASE = window.location.origin;
 
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
@@ -194,14 +193,14 @@
     function updateProgressBar(bar, percentage) {
         bar.style.width = percentage + '%';
         if (percentage >= 100) {
-            bar.style.backgroundColor = '#3498db'; // 蓝色
+            bar.style.backgroundColor = '#3498db';
         } else {
-            bar.style.backgroundColor = '#f39c12'; // 橘红色
+            bar.style.backgroundColor = '#f39c12';
         }
     }
 
     async function uploadFile(file) {
-        // 创建文件项UI
+        // Create a file entry.
         const id = 'file-' + Math.random().toString(36).substr(2, 9);
         const html = `
             <div class="file-item" id="${id}">
@@ -212,11 +211,11 @@
                         <div class="progress-bar"></div>
                     </div>
                     <details class="log-details">
-                        <summary>日志（点击展开）</summary>
+                        <summary>Logs (click to expand)</summary>
                         <ul class="log-list"></ul>
                     </details>
                 </div>
-                <div class="status-badge status-uploading">上传中...</div>
+                <div class="status-badge status-uploading">Uploading...</div>
             </div>
         `;
         fileList.insertAdjacentHTML('afterbegin', html);
@@ -228,14 +227,14 @@
         const logSummary = itemEl.querySelector('.log-details summary');
         const logListEl = itemEl.querySelector('.log-list');
 
-        // 构建FormData
+        // Build the upload payload.
         const formData = new FormData();
         formData.append('files', file);
 
         try {
-            // 1. 上传文件
+            // Upload the file.
             progressContainer.style.display = 'block';
-            // 模拟上传进度
+            // Show initial upload progress.
             updateProgressBar(progressBar, 50);
 
             const response = await fetch(`${API_BASE}/upload`, {
@@ -246,34 +245,31 @@
             if (!response.ok) throw new Error('Upload failed');
             
             const result = await response.json();
-            const taskId = result.task_ids[0]; // 假设一次传一个或取第一个
+            const taskId = result.task_ids[0];
 
-            // 上传完成，进入处理中，进度固定为30%
+            // Processing starts after upload.
             updateProgressBar(progressBar, 30);
-            statusBadge.textContent = '处理中...';
+            statusBadge.textContent = 'Processing...';
             statusBadge.className = 'status-badge status-processing';
 
-            // 2. 轮询状态
+            // Poll the task status.
             pollStatus(taskId, itemEl);
 
         } catch (error) {
             console.error(error);
-            statusBadge.textContent = '失败';
+            statusBadge.textContent = 'Failed';
             statusBadge.className = 'status-badge status-error';
         }
     }
 
     function normalizeDoneLog(text) {
-        // 后端可能返回中文节点名，也可能已拼接“已完成”
         if (typeof text !== 'string') return String(text);
-        return text.endsWith('已完成') ? text : `${text}已完成`;
+        return text.endsWith(' completed') ? text : `${text} completed`;
     }
 
     function normalizeRunningLog(text) {
-        // 后端可能返回中文节点名，也可能已拼接“正在进行.../处理中...”
         if (typeof text !== 'string') return String(text);
-        if (text.startsWith('正在进行')) return text.endsWith('...') ? text : `${text}...`;
-        return `正在进行${text}...`;
+        return text.endsWith(' in progress...') ? text : `${text} in progress...`;
     }
 
     function renderLogs(itemEl, doneList, runningList) {
@@ -284,10 +280,9 @@
         const done = Array.isArray(doneList) ? doneList : [];
         const running = Array.isArray(runningList) ? runningList : [];
 
-        // 更新 summary（即使收起也能看到进度）
-        logSummary.textContent = `日志（已完成${done.length}，进行中${running.length}，点击展开）`;
+        logSummary.textContent = `Logs (${done.length} completed, ${running.length} running; click to expand)`;
 
-        // 清空并重建列表
+        // Rebuild the log list.
         logListEl.innerHTML = '';
         const lines = [
             ...done.map(normalizeDoneLog),
@@ -296,7 +291,7 @@
 
         if (lines.length === 0) {
             const li = document.createElement('li');
-            li.textContent = '暂无日志';
+            li.textContent = 'No logs yet';
             logListEl.appendChild(li);
         } else {
             for (const line of lines) {
@@ -306,7 +301,7 @@
             }
         }
 
-        // 如果没有任何日志，默认收起；否则保持用户选择
+        // Collapse only when no logs are available.
         if (lines.length === 0) {
             logDetails.open = false;
         }
@@ -321,28 +316,26 @@
                 const res = await fetch(`${API_BASE}/status/${taskId}`);
                 const data = await res.json();
 
-                // 渲染日志（done/running）
+                // Render completed and running tasks.
                 renderLogs(itemEl, data.done_list, data.running_list);
                 
                 if (data.status === 'completed') {
-                    statusBadge.textContent = '已完成';
+                    statusBadge.textContent = 'Completed';
                     statusBadge.className = 'status-badge status-completed';
                     updateProgressBar(progressBar, 100);
                     clearInterval(interval);
                 } else if (data.status === 'processing') {
-                    // 保持处理中状态
-                    statusBadge.textContent = '处理中...';
-                    // 确保进度为30%
+                    statusBadge.textContent = 'Processing...';
                      updateProgressBar(progressBar, 30);
                 } else if (data.status === 'failed') {
-                    statusBadge.textContent = '失败';
+                    statusBadge.textContent = 'Failed';
                     statusBadge.className = 'status-badge status-error';
                     clearInterval(interval);
                 }
             } catch (e) {
                 console.error('Polling error', e);
             }
-        }, 2000); // 每2秒轮询一次
+        }, 2000);
     }
 </script>
 

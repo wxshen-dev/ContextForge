@@ -16,10 +16,14 @@ dependencies = [
     "loguru>=0.7.3",
     "minio>=7.2.20",
     "modelscope>=1.40.1",
+    "numpy>=2.4.3",
+    "openai-agents>=0.4.2",
     "pydantic>=2.13.5",
     "pydantic-settings>=2.15.0",
     "pymilvus[model]>=3.0.1",
+    "pymongo>=4.16.0",
     "python-dotenv>=1.2.3",
+    "requests>=2.32.5",
     "transformers>=5.17.0",
     "uvicorn[standard]>=0.52.4",
     "flagembedding>=v1.3.5",
@@ -40,7 +44,7 @@ build-backend = "uv_build"
 module-name = "app"
 
 [tool.uv.sources]
-# 强制从 NVIDIA 源安装
+# Install CUDA packages from the NVIDIA package index.
 torch = { index = "pytorch-cuda" }
 torchvision = { index = "pytorch-cuda" }
 torchaudio = { index = "pytorch-cuda" }

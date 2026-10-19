@@ -1,6 +1,5 @@
 import os
 
-from pymilvus.model.hybrid import BGEM3EmbeddingFunction
 from app.core.logger import logger
 from app.conf.embedding_config import embedding_config
 
@@ -40,6 +39,8 @@ def get_bge_m3_ef():
     )
 
     try:
+        from pymilvus.model.hybrid import BGEM3EmbeddingFunction
+
         # Initialize BGE-M3 with built-in L2 normalization for Milvus IP retrieval.
         _bge_m3_ef = BGEM3EmbeddingFunction(
             model_name=model_name,

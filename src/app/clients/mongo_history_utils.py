@@ -54,13 +54,6 @@ class HistoryMongoTool:
 # Global singleton for HistoryMongoTool.
 _history_mongo_tool = None
 
-# Warm up the singleton during module import; lazy loading can retry if this fails.
-try:
-    _history_mongo_tool = HistoryMongoTool()
-except Exception as e:
-    logging.warning(f"Could not initialize HistoryMongoTool on module load: {e}")
-
-
 def get_history_mongo_tool() -> HistoryMongoTool:
     """
     Get the HistoryMongoTool singleton with lazy loading.

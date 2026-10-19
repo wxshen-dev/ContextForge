@@ -1,0 +1,13 @@
+Conversation history:
+{history_text}
+
+Current user question:
+{query}
+
+Extract the product names the user is asking about. If the question names products explicitly, return each name once. Resolve pronouns using the conversation history. If no product can be identified, return an empty list. Rewrite the question as a standalone question that includes the identified product names when available. Preserve the language of the user's question.
+
+Return only valid JSON in this shape:
+{{
+  "item_names": ["Product A", "Product B"],
+  "rewritten_query": "A standalone question about Product A and Product B"
+}}
