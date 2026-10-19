@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Knowledge Base Import</title>
+    <title>Import documents · ContextForge</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -141,44 +141,119 @@
             margin: 2px 0;
             line-height: 1.4;
         }
+        :root { --ink:#142a3d; --muted:#617588; --line:#d8e2e9; --navy:#102d42; --accent:#087c89; --pale:#eef5f6; }
+        * { box-sizing:border-box; }
+        body { display:block; min-height:100vh; padding:0; background:#f3f6f7; color:var(--ink); font-family:Inter,"Segoe UI",Arial,sans-serif; }
+        button, input { font:inherit; }
+        button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visible { outline:3px solid #0b8190; outline-offset:3px; }
+        .site-header { min-height:72px; background:var(--navy); color:#fff; display:flex; align-items:center; justify-content:space-between; gap:24px; padding:0 max(32px, calc((100vw - 1200px)/2)); }
+        .brand { display:flex; align-items:center; gap:12px; color:#fff; text-decoration:none; font-weight:760; letter-spacing:-.035em; font-size:19px; }
+        .brand-mark { display:grid; place-items:center; width:36px; height:36px; border-radius:9px; background:#45d0c9; color:#073044; font-size:17px; font-weight:900; }
+        .site-nav { display:flex; gap:7px; align-items:center; }
+        .site-nav a { color:#d8e7eb; text-decoration:none; font-size:14px; font-weight:600; padding:11px 16px; border-radius:8px; }
+        .site-nav a:hover, .site-nav a[aria-current="page"] { background:#23485b; color:#fff; }
+        .page-shell { max-width:1200px; margin:0 auto; padding:52px 32px 80px; }
+        .eyebrow { margin:0 0 12px; color:var(--accent); font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.14em; }
+        h1 { text-align:left; color:var(--ink); font-size:clamp(32px,4vw,48px); line-height:1.08; letter-spacing:-.055em; margin:0 0 14px; }
+        .lede { max-width:700px; color:var(--muted); line-height:1.55; margin:0 0 36px; font-size:16px; }
+        .workspace-grid { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(270px,.7fr); gap:24px; align-items:start; }
+        .container { max-width:none; width:auto; padding:30px; border:1px solid var(--line); border-radius:14px; box-shadow:0 16px 42px rgba(16,45,66,.045); }
+        .panel-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px; }
+        h2 { margin:0; font-size:20px; letter-spacing:-.025em; }
+        .panel-heading span { color:var(--muted); font-size:13px; }
+        .upload-area { border:1.5px dashed #83aeb3; background:#f8fbfb; padding:38px 22px; margin:0; cursor:default; transition:background .2s,border-color .2s; }
+        .upload-area:hover, .upload-area.is-dragging { background:#edf8f8; border-color:var(--accent); }
+        .upload-icon { width:52px; height:52px; display:grid; place-items:center; background:#dceff0; border-radius:13px; margin:0 auto 18px; }
+        .upload-icon svg { width:27px; height:27px; stroke:#0b7280; }
+        .upload-area strong { display:block; font-size:19px; letter-spacing:-.025em; }
+        .upload-area p { color:var(--muted); margin:7px 0 18px; line-height:1.5; }
+        .upload-button { min-height:44px; background:var(--navy); color:#fff; border:0; border-radius:8px; padding:10px 18px; font-weight:700; cursor:pointer; }
+        .upload-button:hover { background:#16435c; }
+        .file-input { position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; }
+        .file-list { margin-top:24px; }
+        .queue-title { margin:0 0 12px; font-size:15px; color:var(--ink); }
+        .empty-queue { border-top:1px solid var(--line); padding:18px 0 0; color:var(--muted); font-size:14px; }
+        .file-item { border:1px solid var(--line); border-radius:9px; padding:16px; margin-bottom:10px; gap:16px; align-items:flex-start; }
+        .file-name { color:var(--ink); overflow-wrap:anywhere; }
+        .file-size, .log-details { color:var(--muted); }
+        .status-badge { min-width:auto; padding:6px 10px; border-radius:5px; letter-spacing:.02em; }
+        .status-uploading { background:#9b6218; } .status-processing { background:#186879; } .status-completed { background:#16734e; } .status-error { background:#b84242; }
+        .guide { background:#e8f0f2; border:1px solid #d3e1e5; border-radius:14px; padding:29px 27px; }
+        .guide h2 { margin-bottom:24px; }
+        .guide ol { margin:0; padding:0; list-style:none; counter-reset:steps; }
+        .guide li { position:relative; counter-increment:steps; border-top:1px solid #cbdce0; padding:18px 0 18px 46px; line-height:1.45; color:var(--muted); font-size:14px; }
+        .guide li::before { content:counter(steps, decimal-leading-zero); position:absolute; left:0; top:18px; color:#087c89; font-size:12px; font-weight:800; }
+        .guide li strong { display:block; color:var(--ink); font-size:15px; margin-bottom:4px; }
+        .guide-link { display:inline-flex; margin-top:18px; color:#075e6a; font-weight:750; text-underline-offset:4px; }
+        @media(max-width:760px) { .site-header { padding:12px 18px; flex-wrap:wrap; } .site-nav a { padding:9px 12px; } .page-shell { padding:34px 18px 60px; } .workspace-grid { grid-template-columns:1fr; } .container,.guide { padding:22px; } .panel-heading { align-items:flex-start; flex-direction:column; gap:4px; } .file-item { flex-direction:column; } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>📄 Knowledge Base Import</h1>
-    
-    <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
-        <div class="upload-icon">☁️</div>
-        <p>Click or drop files here (PDF/MD)</p>
-        <input type="file" id="fileInput" class="file-input" multiple accept=".pdf,.md">
+<header class="site-header">
+    <a class="brand" href="/import.html"><span class="brand-mark" aria-hidden="true">C</span>ContextForge</a>
+    <nav class="site-nav" aria-label="Main navigation">
+        <a href="http://127.0.0.1:8001/chat.html" data-peer-port="8001">Ask questions</a>
+        <a href="/import.html" aria-current="page">Import documents</a>
+    </nav>
+</header>
+<main class="page-shell">
+    <p class="eyebrow">Knowledge workspace / 01</p>
+    <h1>Build your knowledge base.</h1>
+    <p class="lede">Add your reference documents, follow each import step, then ask questions grounded in the material you uploaded.</p>
+    <div class="workspace-grid">
+        <section class="container" aria-labelledby="uploadTitle">
+            <div class="panel-heading"><h2 id="uploadTitle">Add documents</h2><span>PDF or Markdown · multiple files</span></div>
+            <div class="upload-area" id="dropZone">
+                <div class="upload-icon" aria-hidden="true"><svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3m0 0L7 8m5-5 5 5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg></div>
+                <strong>Drop files here</strong>
+                <p>Or choose files from your computer to start importing.</p>
+                <button type="button" class="upload-button" id="chooseFiles">Choose files</button>
+                <input type="file" id="fileInput" class="file-input" multiple accept=".pdf,.md" aria-label="Choose PDF or Markdown files">
+            </div>
+            <div class="file-list" aria-live="polite">
+                <h3 class="queue-title">Import activity</h3>
+                <p class="empty-queue" id="emptyQueue">No documents uploaded in this session.</p>
+                <div id="fileList"></div>
+            </div>
+        </section>
+        <aside class="guide" aria-labelledby="guideTitle">
+            <p class="eyebrow">How it works</p>
+            <h2 id="guideTitle">From file to answer</h2>
+            <ol>
+                <li><strong>Upload</strong>Send a PDF or Markdown document.</li>
+                <li><strong>Process</strong>Track extraction, indexing, and any errors in the activity log.</li>
+                <li><strong>Explore</strong>Ask a focused question about the imported material.</li>
+            </ol>
+            <a class="guide-link" href="http://127.0.0.1:8001/chat.html" data-peer-port="8001">Open question workspace →</a>
+        </aside>
     </div>
-
-    <div id="fileList" class="file-list">
-        <!-- Uploaded files appear here. -->
-    </div>
-</div>
+</main>
 
 <script>
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
     const fileList = document.getElementById('fileList');
+    document.getElementById('chooseFiles').addEventListener('click', () => fileInput.click());
     
     const API_BASE = window.location.origin;
+    document.querySelectorAll('[data-peer-port]').forEach(link => {
+        link.href = `${location.protocol}//${location.hostname}:${link.dataset.peerPort}/chat.html`;
+    });
 
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
-        dropZone.style.backgroundColor = '#ecf6fd';
+        dropZone.classList.add('is-dragging');
     });
 
     dropZone.addEventListener('dragleave', (e) => {
         e.preventDefault();
-        dropZone.style.backgroundColor = '';
+        dropZone.classList.remove('is-dragging');
     });
 
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
-        dropZone.style.backgroundColor = '';
+        dropZone.classList.remove('is-dragging');
         handleFiles(e.dataTransfer.files);
     });
 
@@ -187,7 +262,9 @@
     });
 
     function handleFiles(files) {
+        if (files.length) document.getElementById('emptyQueue').hidden = true;
         Array.from(files).forEach(uploadFile);
+        fileInput.value = '';
     }
 
     function updateProgressBar(bar, percentage) {
@@ -205,7 +282,7 @@
         const html = `
             <div class="file-item" id="${id}">
                 <div class="file-info">
-                    <span class="file-name">${file.name}</span>
+                    <span class="file-name"></span>
                     <span class="file-size">${(file.size / 1024).toFixed(2)} KB</span>
                     <div class="progress-bar-container">
                         <div class="progress-bar"></div>
@@ -220,6 +297,7 @@
         `;
         fileList.insertAdjacentHTML('afterbegin', html);
         const itemEl = document.getElementById(id);
+        itemEl.querySelector('.file-name').textContent = file.name;
         const statusBadge = itemEl.querySelector('.status-badge');
         const progressBar = itemEl.querySelector('.progress-bar');
         const progressContainer = itemEl.querySelector('.progress-bar-container');

@@ -188,6 +188,18 @@ def _extract_images_from_docs(docs):
     logger.info(f"图片提取完成，共找到 {len(images)} 张唯一图片: {images}")
     return images
 
+
+def _sanitize_image_block(answer: str, allowed_urls: list[str]) -> str:
+    """Keep only image links that actually appeared in retrieved documents."""
+    if _IMAGE_BLOCK_MARKER not in answer:
+        return answer
+    body, _, proposed_block = answer.rpartition(_IMAGE_BLOCK_MARKER)
+    proposed_urls = [line.strip() for line in proposed_block.splitlines() if line.strip()]
+    valid_urls = [url for url in proposed_urls if url in allowed_urls]
+    if not valid_urls:
+        return body.rstrip()
+    return body.rstrip() + "\n\n" + _IMAGE_BLOCK_MARKER + "\n" + "\n".join(valid_urls)
+
 def step_4_write_history(state: QueryGraphState, image_urls = None) -> QueryGraphState:
 
   session_id = state.get("session_id", "default")
@@ -226,6 +238,11 @@ def node_answer_output(state: QueryGraphState) -> QueryGraphState:
 
   image_urls = _extract_images_from_docs(state.get("reranked_docs") or [])
   state["image_urls"] = image_urls
+
+  if state.get("answer"):
+    state["answer"] = _sanitize_image_block(state["answer"], image_urls)
+    if not state.get("is_stream"):
+      set_task_result(state["session_id"], "answer", state["answer"])
 
   if state.get("answer"):
     logger.info("---写入MongoDB历史记录---")

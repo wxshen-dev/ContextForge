@@ -257,18 +257,40 @@
       background:#f7f9fc;
       color:#3b4a5a;
     }
+    :root{--bg:#f3f6f7;--panel:#fff;--text:#142a3d;--muted:#617588;--brand:#087c89;--brand2:#087c89;--bubble-user:#16455d;--border:#d8e2e9;--shadow:0 16px 42px rgba(16,45,66,.045)}
+    body{font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--bg);height:100vh;padding:0;align-items:stretch}
+    button,textarea,input{font:inherit}
+    button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #0b8190;outline-offset:3px}
+    .app{max-width:none;height:100vh;border:0;border-radius:0;box-shadow:none;background:var(--bg)}
+    .topbar{min-height:72px;background:#102d42;color:#fff;border:0;padding:0 max(32px, calc((100vw - 1200px)/2));gap:24px}
+    .brand{min-width:auto;gap:12px}.logo{width:36px;height:36px;border-radius:9px;background:#45d0c9;box-shadow:none;display:grid;place-items:center;color:#073044;font-size:17px;font-weight:900}.logo::after{content:'C'}
+    .title strong{font-size:19px;letter-spacing:-.035em}.title span{display:none}
+    .site-nav{display:flex;gap:7px;align-items:center;margin-left:24px}.site-nav a{color:#d8e7eb;text-decoration:none;font-size:14px;font-weight:600;padding:11px 16px;border-radius:8px;white-space:nowrap}.site-nav a:hover,.site-nav a[aria-current="page"]{background:#23485b;color:#fff}
+    .top-actions{gap:12px}.top-actions label{color:#d8e7eb!important;font-size:13px!important;margin-right:0!important}.pill{color:#e6f4f3;background:#23485b;border-color:#36596a;border-radius:5px;font-size:12px;font-weight:650}.btn{background:transparent;border:1px solid #66818f;border-radius:7px;color:#fff;min-height:38px;font-size:13px;font-weight:650;padding:8px 12px}.btn:hover{background:#23485b}
+    .chat{background:var(--bg);padding:32px max(32px, calc((100vw - 900px)/2)) 38px;scroll-behavior:smooth}
+    .workspace-intro{margin:0 0 30px}.eyebrow{font-size:12px;color:#087c89;text-transform:uppercase;letter-spacing:.14em;font-weight:800;margin:0 0 10px}.workspace-intro h1{font-size:clamp(30px,3vw,42px);line-height:1.1;letter-spacing:-.05em;margin:0 0 9px}.workspace-intro p:last-child{color:var(--muted);margin:0;line-height:1.5}
+    .dayline{display:none}.msg{margin:18px 0;gap:12px;align-items:flex-start}.msg>div:not(.avatar){flex:0 1 auto;max-width:min(100%,730px)}.avatar{width:36px;height:36px;border-radius:9px;font-size:11px;font-weight:800;background:#dae7eb;color:#153f52}.avatar.bot{background:#dceff0;color:#0c616d}
+    .bubble{max-width:100%;font-size:15px;line-height:1.6;padding:16px 19px;border-radius:10px;box-shadow:0 3px 12px rgba(16,45,66,.025)}.msg.user .bubble{background:#16455d}.msg.user .meta{color:var(--muted)}.meta{font-size:12px;margin-top:7px}
+    details.progress{background:#f3f7f8;border:1px solid var(--border);border-radius:7px;margin-top:12px}details.progress summary{color:#42606e;font-size:12px}.progress li{color:#42606e}
+    .composer{background:#fff;border-top:1px solid var(--border);padding:17px max(32px, calc((100vw - 900px)/2));gap:12px}textarea{min-height:52px;max-height:160px;border-color:#aebfc8;border-radius:8px;font-size:15px;padding:13px 15px}textarea:focus{border-color:#087c89;box-shadow:0 0 0 3px rgba(8,124,137,.13)}.send{min-height:52px;height:52px;width:96px;border-radius:8px;background:#087c89;font-size:14px;font-weight:750}.send:hover{background:#08616c}.hint{padding:0 max(32px, calc((100vw - 900px)/2)) 14px;background:#fff;font-size:12px}
+    @media(max-width:900px){.topbar{padding:10px 18px;flex-wrap:wrap;gap:8px}.site-nav{margin-left:auto}.top-actions{width:100%;margin:0 0 5px;justify-content:flex-end}.chat{padding:25px 18px}.composer{padding:14px 18px}.hint{padding:0 18px 12px}}
+    @media(max-width:520px){.title strong{font-size:17px}.site-nav{order:3;width:100%;margin:0}.site-nav a{padding:8px 12px}.top-actions{order:2;width:auto;margin-left:auto}.top-actions label{display:none!important}.pill{display:none}.btn{font-size:12px;min-height:34px}.chat{padding:22px 14px}.workspace-intro{margin-bottom:22px}.msg{gap:8px}.bubble{padding:12px 14px;font-size:14px}.composer{padding:12px 14px}.send{width:68px}.hint{padding:0 14px 10px}}
+    @media(prefers-reduced-motion:reduce){.dot{animation:none}.chat{scroll-behavior:auto}}
   </style>
 </head>
 <body>
   <div class="app">
     <div class="topbar">
       <div class="brand">
-        <div class="logo"></div>
+        <div class="logo" aria-hidden="true"></div>
         <div class="title">
-           <strong>ContextForge Knowledge Assistant</strong>
-           <span id="subTitle">Online · Search documents and web sources</span>
+           <strong>ContextForge</strong>
         </div>
       </div>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/chat.html" aria-current="page">Ask questions</a>
+        <a href="http://127.0.0.1:8000/import.html" data-peer-port="8000">Import documents</a>
+      </nav>
       <div class="top-actions">
         <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;user-select:none;color:var(--muted);margin-right:10px;">
           <input type="checkbox" id="streamToggle" checked> Stream responses
@@ -279,18 +301,23 @@
     </div>
 
     <div class="chat" id="chat">
+      <div class="workspace-intro">
+        <p class="eyebrow">Knowledge workspace / 02</p>
+        <h1>Ask your documents.</h1>
+        <p>Find practical answers from your indexed reference material.</p>
+      </div>
       <div class="dayline">Today</div>
       <div class="msg bot">
         <div class="avatar bot">CF</div>
         <div>
-          <div class="bubble">Hello! Ask a question about your documents. You can follow each step in the progress panel.</div>
-          <div class="meta">Try asking: “How do I measure voltage with a multimeter?”</div>
+          <div class="bubble">Ready when you are. Ask a specific question about a document you imported; the answer will show its processing steps below.</div>
+          <div class="meta">For example: “How do I measure DC voltage with the Atlas M42?”</div>
         </div>
       </div>
     </div>
 
     <div class="composer">
-      <textarea id="input" placeholder="Ask a question (Enter to send, Shift+Enter for a new line)"></textarea>
+      <textarea id="input" aria-label="Ask a question" placeholder="Ask a question about your documents…"></textarea>
       <button class="send" id="send">Send</button>
     </div>
     <div class="hint">Shortcuts: <span class="kbd">Enter</span> to send, <span class="kbd">Shift</span>+<span class="kbd">Enter</span> for a new line</div>
@@ -298,6 +325,9 @@
 
   <script>
     const API_BASE = `${location.protocol}//${location.host}`.includes('http') ? `${location.protocol}//${location.host}` : 'http://127.0.0.1:8001';
+    document.querySelectorAll('[data-peer-port]').forEach(link => {
+      link.href = `${location.protocol}//${location.hostname}:${link.dataset.peerPort}/import.html`;
+    });
     const chatEl = document.getElementById('chat');
     const inputEl = document.getElementById('input');
     const sendBtn = document.getElementById('send');
@@ -317,13 +347,13 @@
     }
     function nowTime(){
       const d = new Date();
-      return d.toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'});
+      return d.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
     }
     function formatTime(ts){
       if(!ts) return nowTime();
       const d = new Date(Number(ts) * 1000);
       if(Number.isNaN(d.getTime())) return nowTime();
-      return d.toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'});
+      return d.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
     }
     function escapeHtml(str){
       return String(str)
@@ -587,8 +617,8 @@
       summary.textContent = `Progress (${totalDone} completed, ${totalRun} running, status: ${displayStatus})`;
 
       const lines = [
-        ...done.map(x => `✅ ${x}`),
-        ...running.map(x => `⏳ ${x}`)
+        ...done.map(x => `Done: ${x}`),
+        ...running.map(x => `Running: ${x}`)
       ];
       ul.innerHTML = '';
       if(lines.length === 0){
@@ -773,6 +803,10 @@
           if(typing) typing.remove();
           const progress = botMsgEl.querySelector('details.progress');
           if(progress) progress.removeAttribute('open');
+          if(progress){
+            const summary = progress.querySelector('summary');
+            summary.textContent = summary.textContent.replace(/status: [^)]+/, 'status: Completed');
+          }
 
           try{
             const d = JSON.parse(e.data || '{}');
@@ -788,6 +822,10 @@
           if(typing) typing.remove();
           const progress = botMsgEl.querySelector('details.progress');
           if(progress) progress.removeAttribute('open');
+          if(progress){
+            const summary = progress.querySelector('summary');
+            summary.textContent = summary.textContent.replace(/status: [^)]+/, 'status: Completed');
+          }
 
           try{
             const d = JSON.parse(e.data || '{}');

@@ -16,6 +16,7 @@ from app.utils.task_utils import (
     TASK_STATUS_COMPLETED,
     TASK_STATUS_FAILED,
     TASK_STATUS_PROCESSING,
+    clear_task,
     get_done_task_list,
     get_running_task_list,
     get_task_result,
@@ -76,6 +77,7 @@ def run_query_graph(session_id: str, user_query: str, is_stream: bool = True) ->
 @app.post("/query")
 async def query(background_tasks: BackgroundTasks, request: QueryRequest) -> dict:
     session_id = request.session_id or str(uuid4())
+    clear_task(session_id)
     if request.is_stream:
         create_sse_queue(session_id)
     update_task_status(session_id, TASK_STATUS_PROCESSING, request.is_stream)

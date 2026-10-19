@@ -99,6 +99,11 @@ def step_2_scan_images(md_content: str, images_dir_obj: Path) -> List[Tuple[str,
     """
     # Store the final image processing targets.
     image_targets = []
+    if not images_dir_obj.is_dir():
+        image_refs = re.findall(r"!\[[^\]]*\]\(([^)]*)\)", md_content)
+        if any(not re.match(r"^(?:https?://|data:)", ref.strip(), re.IGNORECASE) for ref in image_refs):
+            raise FileNotFoundError(f"Markdown references images, but the image directory is missing: {images_dir_obj}")
+        return image_targets
     # Use pathlib to iterate through the image directory.
     for image_file in images_dir_obj.iterdir():
         img_name = image_file.name

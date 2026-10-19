@@ -12,7 +12,8 @@ ContextForge imports PDF and Markdown documents into a searchable knowledge base
 ## Requirements
 
 - Python 3.12 or newer and [uv](https://docs.astral.sh/uv/).
-- MongoDB, Milvus, MinIO, an OpenAI-compatible model endpoint, and local BGE-M3/reranker model files for the full workflow.
+- Docker Desktop for the included local MongoDB, Milvus, and MinIO services.
+- An OpenAI-compatible model endpoint and a local BGE-M3 model for document import and answers. A local reranker model is recommended; the query workflow falls back to its initial ranking if the reranker cannot load.
 - MinerU for PDF conversion. The web-search MCP endpoint is optional.
 
 Install dependencies:
@@ -22,7 +23,16 @@ uv sync --locked
 Copy-Item .env.example .env
 ```
 
-Fill in `.env` with your own service endpoints, credentials, collection names, and model paths. `LLM_DEFAULT_TEMPERATURE` must contain a number. The `.env` file is ignored by Git. Model downloads and storage services must be prepared before processing documents.
+Set `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `LLM_DEFAULT_MODEL`, and `BGE_M3_PATH` in `.env`. Set `BGE_DEVICE` to `cpu` or a working CUDA device. `LLM_DEFAULT_TEMPERATURE` must contain a number. The `.env` file is ignored by Git. For PDF files, also configure MinerU. The web-search MCP endpoint is optional.
+
+Start the local storage services from the repository root:
+
+```powershell
+docker compose -f compose.local.yml up -d mongo minio milvus
+docker compose -f compose.local.yml ps
+```
+
+The compose file binds MongoDB to `127.0.0.1:27017`, the application MinIO API to `127.0.0.1:39000` (console: `39001`), and Milvus to `127.0.0.1:39530`. These match `.env.example`. MinIO uses the credentials in `.env`; change the example values before using this setup outside local development. Docker volumes retain data between restarts. Stop the stack with `docker compose -f compose.local.yml down`.
 
 ## Run locally
 
@@ -33,7 +43,7 @@ uv run contextforge import
 uv run contextforge query
 ```
 
-The import page is at `http://127.0.0.1:8000/import.html`; the chat page is at `http://127.0.0.1:8001/chat.html`. Use `--host` or `--port` to override a default. Each service also exposes `/docs` for its API schema.
+The import page is at `http://127.0.0.1:8000/import.html`; the chat page is at `http://127.0.0.1:8001/chat.html`. Each page links to the other. Use `--host` or `--port` to override a default. Each service also exposes `/docs` for its API schema.
 
 ## API
 
@@ -57,10 +67,12 @@ Invoke-RestMethod -Uri http://127.0.0.1:8001/query -Method Post -ContentType 'ap
 
 ## Browser acceptance
 
-The English import and chat pages were opened in a real browser against locally running services. The chat page showed a connected API indicator. API smoke checks covered upload and task status with mocked storage/graph dependencies, plus synchronous query and status with a mocked query graph.
+The included [sample document](tests/fixtures/atlas-m42.md) makes the workflow reproducible. With the local Docker stack and model settings above, upload it from the import page and wait for **Completed**. The activity log should show upload, Markdown processing, splitting, product identification, vector generation, and Milvus import. In the chat page, ask: **How do I measure DC voltage with the Atlas M42?** A successful answer includes the COM and VΩ jacks, DC V setting, probes in parallel, and 600 V maximum range. Refresh the page to verify that MongoDB restores the conversation.
 
-![Chat interface](docs/screenshots/chat-ui.jpg)
+This workflow was exercised in a real browser with the running services. The sample import completed, product and document vectors were stored in Milvus, a live query returned a document-based answer, and chat history was read back from MongoDB. The screenshots below capture the live browser states.
 
-![Document import interface](docs/screenshots/import-ui.jpg)
+![Completed document import](docs/screenshots/import-accepted.png)
 
-The full document-to-answer path still requires the external services and model files listed above. Knowledge-graph query code in the source material is an unfinished placeholder, so this application does not route queries through it.
+![Document question and answer](docs/screenshots/chat-accepted.png)
+
+PDF conversion additionally requires MinerU. Knowledge-graph querying is not wired into the current answer workflow.

@@ -1,0 +1,75 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: contextforge-mongo
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - contextforge_mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: contextforge-minio
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-contextforge}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-contextforge-local-only}
+    ports:
+      - "127.0.0.1:39000:9000"
+      - "127.0.0.1:39001:9001"
+    volumes:
+      - contextforge_minio_data:/data
+
+  vector-etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    container_name: contextforge-vector-etcd
+    command: etcd -advertise-client-urls=http://vector-etcd:2379 -listen-client-urls=http://0.0.0.0:2379 --data-dir /etcd
+    restart: unless-stopped
+    environment:
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+      ETCD_SNAPSHOT_COUNT: "50000"
+    volumes:
+      - contextforge_etcd_data:/etcd
+
+  vector-minio:
+    image: quay.io/minio/minio:RELEASE.2023-03-20T20-16-18Z
+    container_name: contextforge-vector-minio
+    command: server /minio_data
+    restart: unless-stopped
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    volumes:
+      - contextforge_vector_minio_data:/minio_data
+
+  milvus:
+    image: milvusdb/milvus:v2.4.11
+    container_name: contextforge-milvus
+    command: ["milvus", "run", "standalone"]
+    restart: unless-stopped
+    environment:
+      ETCD_ENDPOINTS: vector-etcd:2379
+      MINIO_ADDRESS: vector-minio:9000
+    depends_on:
+      - vector-etcd
+      - vector-minio
+    ports:
+      - "127.0.0.1:39530:19530"
+    volumes:
+      - contextforge_milvus_data:/var/lib/milvus
+
+volumes:
+  contextforge_mongo_data:
+  contextforge_minio_data:
+  contextforge_etcd_data:
+  contextforge_vector_minio_data:
+  contextforge_milvus_data:
