@@ -1,10 +1,10 @@
 # ContextForge
 
-Import reference documents, then ask questions against them in a browser. ContextForge turns PDF and Markdown files into a searchable knowledge base and shows each step as it builds an answer.
+Import reference documents, then ask questions against them in a browser. ContextForge combines a React and TypeScript frontend with two FastAPI services. It turns PDF and Markdown files into a searchable knowledge base and shows each step as it builds an answer.
 
 ![ContextForge chat answering a question from an imported document](docs/screenshots/chat-accepted.png)
 
-The chat streams answers, keeps conversation history, and lets you [inspect the processing steps](docs/screenshots/chat-progress-expanded.png). The separate [import workspace](docs/screenshots/import-accepted.png) shows the status of each document.
+The chat [streams answers and processing activity](docs/screenshots/chat-processing.png), keeps conversation history, and lets you [inspect the completed steps](docs/screenshots/chat-progress-expanded.png). The separate [import workspace](docs/screenshots/import-accepted.png) shows the status of each document.
 
 ## What you can do
 
@@ -16,7 +16,7 @@ The import and query services run independently, so document processing does not
 
 ## Quick start
 
-These commands use Windows PowerShell from the repository root. You need Python 3.12+, [uv](https://docs.astral.sh/uv/), Docker Desktop, and an OpenAI-compatible model endpoint. The first installation downloads sizable Python and model dependencies.
+These commands use Windows PowerShell from the repository root. You need Python 3.12+, [uv](https://docs.astral.sh/uv/), Node.js 22.12+ and npm, Docker Desktop, and an OpenAI-compatible model endpoint. The first installation downloads sizable Python and model dependencies.
 
 1. Install the Python environment and create a local configuration file:
 
@@ -34,7 +34,15 @@ These commands use Windows PowerShell from the repository root. You need Python 
    docker compose -f compose.local.yml ps
    ```
 
-4. Start each application service in its own terminal:
+4. Install the frontend dependencies:
+
+   ```powershell
+   cd frontend
+   npm ci
+   cd ..
+   ```
+
+5. Start each application service in its own terminal:
 
    ```powershell
    uv run contextforge import
@@ -44,7 +52,16 @@ These commands use Windows PowerShell from the repository root. You need Python 
    uv run contextforge query
    ```
 
-Open the [import workspace](http://127.0.0.1:8000/import.html), then the [chat workspace](http://127.0.0.1:8001/chat.html). Both pages link to each other. The services use ports `8000` and `8001` and bind to `127.0.0.1` by default. Run `uv run contextforge --help` to see the `--host` and `--port` options.
+6. Start the React development server in a third terminal:
+
+   ```powershell
+   cd frontend
+   npm run dev
+   ```
+
+Open the [import workspace](http://127.0.0.1:5173/import), then the [chat workspace](http://127.0.0.1:5173/chat). Vite forwards import requests to port `8000` and query requests to port `8001`. Run `uv run contextforge --help` to see the backend `--host` and `--port` options.
+
+For a built frontend, run `npm run build` in `frontend/`, then start or restart the query service. It serves the React app at [localhost:8001/import](http://127.0.0.1:8001/import) and [localhost:8001/chat](http://127.0.0.1:8001/chat). The import API remains on port `8000`. Set `VITE_IMPORT_API_URL` and `VITE_QUERY_API_URL` at build time if the APIs use other origins; the development server uses its local proxies by default. The old `/import.html` and `/chat.html` URLs redirect to the new routes.
 
 ### Try a document end to end
 
@@ -80,7 +97,7 @@ The local Compose file publishes MongoDB on `127.0.0.1:27017`, the application M
 
 **Query:** identify the product in the question → search document passages and optional web results → combine and rerank matches → generate and stream the answer. MongoDB stores user and assistant messages for later turns.
 
-The source code lives under [`src/app`](src/app): `import_process` and `query_process` contain their respective LangGraph workflows and FastAPI services, while `clients` contains the storage integrations.
+The React and TypeScript frontend lives under [`frontend/src`](frontend/src). Shared navigation, upload activity, conversation history, and streamed answer progress are React components. The browser remembers import task IDs locally so the activity list survives navigation and reloads; the import service remains the source of truth for task status. Vite provides the development server and builds static assets for the query service to serve. The Python code lives under [`src/app`](src/app): `import_process` and `query_process` contain their respective LangGraph workflows and FastAPI services, while `clients` contains the storage integrations.
 
 ## HTTP API
 

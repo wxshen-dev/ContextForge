@@ -7,7 +7,7 @@ from uuid import uuid4
 import uvicorn
 from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import RedirectResponse
 
 from app.clients.minio_utils import get_minio_client
 from app.core.logger import logger
@@ -36,11 +36,8 @@ app.add_middleware(
 
 
 @app.get("/import.html")
-async def get_import_page() -> FileResponse:
-    page = Path(__file__).resolve().parent.parent / "page" / "import.html"
-    if not page.is_file():
-        raise HTTPException(status_code=404, detail="Import page not found")
-    return FileResponse(page)
+async def get_import_page() -> RedirectResponse:
+    return RedirectResponse(url="http://127.0.0.1:8001/import", status_code=308)
 
 
 def run_graph_task(task_id: str, local_dir: str, local_file_path: str) -> None:

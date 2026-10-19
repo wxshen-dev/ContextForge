@@ -1,9 +1,9 @@
-from pathlib import Path
 from uuid import uuid4
 
 import uvicorn
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from starlette.middleware.cors import CORSMiddleware
 
@@ -12,6 +12,7 @@ from app.core.logger import logger
 from app.query_process.agent.main_graph import query_app
 from app.query_process.agent.state import create_query_default_state
 from app.utils.sse_utils import SSEEvent, create_sse_queue, push_to_session, sse_generator
+from app.utils.path_util import PROJECT_ROOT
 from app.utils.task_utils import (
     TASK_STATUS_COMPLETED,
     TASK_STATUS_FAILED,
@@ -33,6 +34,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+FRONTEND_DIST = PROJECT_ROOT / "frontend" / "dist"
+if (FRONTEND_DIST / "assets").is_dir():
+    app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="frontend-assets")
+
 
 class QueryRequest(BaseModel):
     query: str = Field(..., min_length=1, description="Question to answer")
@@ -41,11 +46,18 @@ class QueryRequest(BaseModel):
 
 
 @app.get("/chat.html")
-async def chat() -> FileResponse:
-    page = Path(__file__).resolve().parent.parent / "page" / "chat.html"
-    if not page.is_file():
-        raise HTTPException(status_code=404, detail="Chat page not found")
-    return FileResponse(page)
+async def legacy_chat() -> RedirectResponse:
+    return RedirectResponse(url="/chat", status_code=308)
+
+
+@app.get("/")
+@app.get("/import")
+@app.get("/chat")
+async def frontend() -> FileResponse:
+    index = FRONTEND_DIST / "index.html"
+    if not index.is_file():
+        raise HTTPException(status_code=503, detail="Frontend build missing. Run npm run build in frontend/.")
+    return FileResponse(index)
 
 
 @app.get("/health")

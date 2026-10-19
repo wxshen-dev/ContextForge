@@ -32,6 +32,7 @@ htmlcov/
 # Build
 build/
 dist/
+frontend/node_modules/
 *.egg-info/
 
 # Local RAG documents / knowledge base
