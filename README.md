@@ -69,10 +69,12 @@ Invoke-RestMethod -Uri http://127.0.0.1:8001/query -Method Post -ContentType 'ap
 
 The included [sample document](tests/fixtures/atlas-m42.md) makes the workflow reproducible. With the local Docker stack and model settings above, upload it from the import page and wait for **Completed**. The activity log should show upload, Markdown processing, splitting, product identification, vector generation, and Milvus import. In the chat page, ask: **How do I measure DC voltage with the Atlas M42?** A successful answer includes the COM and VΩ jacks, DC V setting, probes in parallel, and 600 V maximum range. Refresh the page to verify that MongoDB restores the conversation.
 
-This workflow was exercised in a real browser with the running services. The sample import completed, product and document vectors were stored in Milvus, a live query returned a document-based answer, and chat history was read back from MongoDB. The screenshots below capture the live browser states.
+This workflow was exercised in a real browser with the running services. The sample import completed, product and document vectors were stored in Milvus, a live query returned a document-based answer, and chat history was read back from MongoDB. While a question runs, the chat shows the current processing step and an expandable step list. After the answer arrives, the process collapses into a compact completion line.
 
 ![Completed document import](docs/screenshots/import-accepted.png)
 
 ![Document question and answer](docs/screenshots/chat-accepted.png)
+
+![Expanded answer processing steps](docs/screenshots/chat-progress-expanded.png)
 
 PDF conversion additionally requires MinerU. Knowledge-graph querying is not wired into the current answer workflow.

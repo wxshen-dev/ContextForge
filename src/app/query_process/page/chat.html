@@ -276,9 +276,47 @@
     @media(max-width:900px){.topbar{padding:10px 18px;flex-wrap:wrap;gap:8px}.site-nav{margin-left:auto}.top-actions{width:100%;margin:0 0 5px;justify-content:flex-end}.chat{padding:25px 18px}.composer{padding:14px 18px}.hint{padding:0 18px 12px}}
     @media(max-width:520px){.title strong{font-size:17px}.site-nav{order:3;width:100%;margin:0}.site-nav a{padding:8px 12px}.top-actions{order:2;width:auto;margin-left:auto}.top-actions label{display:none!important}.pill{display:none}.btn{font-size:12px;min-height:34px}.chat{padding:22px 14px}.workspace-intro{margin-bottom:22px}.msg{gap:8px}.bubble{padding:12px 14px;font-size:14px}.composer{padding:12px 14px}.send{width:68px}.hint{padding:0 14px 10px}}
     @media(prefers-reduced-motion:reduce){.dot{animation:none}.chat{scroll-behavior:auto}}
+    .msg.bot .message-body{flex:0 1 730px;min-width:0;max-width:100%}
+    .msg.bot .bubble{display:block;width:fit-content;max-width:100%;white-space:normal}
+    .answer-text{white-space:pre-wrap;overflow-wrap:anywhere}
+    .avatar.bot{background:#dceff0;color:#08717d}
+    .avatar.bot svg{width:20px;height:20px;display:block;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+    .msg.user .bubble{white-space:pre-wrap}
+    .msg.user .message-body{flex:0 1 auto;max-width:min(78%,730px)}
+    .msg.bot .meta{margin-top:8px}
+    details.progress{display:block;margin:10px 0 0;padding:0;border:0;background:transparent;border-radius:0;width:fit-content;max-width:100%}
+    details.progress summary{display:flex;align-items:center;gap:9px;min-height:44px;padding:6px 2px;color:#476576;font-size:13px;font-weight:600;list-style:none;cursor:pointer}
+    details.progress summary::-webkit-details-marker{display:none}
+    details.progress summary:hover{color:#075e6a}
+    .progress-state{display:flex;align-items:center;gap:8px;min-width:0}
+    .progress-indicator{display:inline-block;width:18px;height:18px;border:2px solid #0a8290;border-radius:50%;flex:none;position:relative}
+    .progress.is-running .progress-indicator{border-top-color:transparent;animation:process-spin .8s linear infinite}
+    .progress.is-complete .progress-indicator{background:#207854;border-color:#207854}
+    .progress.is-complete .progress-indicator::after{content:'';position:absolute;left:4px;top:1px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+    .progress.is-failed .progress-indicator{background:#b84242;border-color:#b84242}
+    .progress.is-failed .progress-indicator::after{content:'!';position:absolute;inset:-4px 0 0;color:#fff;text-align:center;font-size:13px;font-weight:800}
+    .progress-title{white-space:nowrap}
+    .progress-count{color:#718591;font-size:12px;font-weight:500;white-space:nowrap}
+    .progress-chevron{width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);margin:0 5px 4px;transition:transform .18s ease}
+    details.progress[open] .progress-chevron{transform:rotate(225deg);margin:4px 5px 0}
+    .process-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 18px;list-style:none;margin:1px 0 0 27px;padding:0 0 4px;max-width:650px}
+    .process-list li{display:flex;align-items:flex-start;gap:8px;margin:0;min-width:0;color:#5e7481;font-size:12px;line-height:1.4}
+    .process-list li::before{content:'';flex:none;width:6px;height:6px;border-radius:50%;background:#a6b9c2;margin-top:6px}
+    .process-list li.is-done::before{background:#207854}
+    .process-list li.is-running{color:#076e7b;font-weight:650}
+    .process-list li.is-running::before{background:#0a8290;box-shadow:0 0 0 3px #dceff0}
+    @keyframes process-spin{to{transform:rotate(360deg)}}
+    @media(max-width:620px){.process-list{grid-template-columns:1fr;margin-left:26px}.msg.user .message-body{max-width:88%}}
+    @media(prefers-reduced-motion:reduce){.progress.is-running .progress-indicator{animation:none}.progress-chevron{transition:none}}
+    .site-nav a{display:inline-flex;align-items:center;min-height:44px}
+    .top-actions .btn{min-height:44px}
+    .skip-link{position:absolute;left:16px;top:-60px;z-index:5;background:#fff;color:#102d42;padding:10px 14px;border-radius:6px}
+    .skip-link:focus{top:10px}
+    @media(max-width:520px){.site-nav a,.top-actions .btn{min-height:44px}}
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#chat">Skip to conversation</a>
   <div class="app">
     <div class="topbar">
       <div class="brand">
@@ -295,12 +333,12 @@
         <label style="font-size:12px;display:flex;align-items:center;gap:4px;cursor:pointer;user-select:none;color:var(--muted);margin-right:10px;">
           <input type="checkbox" id="streamToggle" checked> Stream responses
         </label>
-        <span class="pill" id="apiPill">API: Disconnected</span>
+        <span class="pill" id="apiPill" role="status" aria-live="polite">API: Disconnected</span>
         <button class="btn" id="btnClear">Clear chat</button>
       </div>
     </div>
 
-    <div class="chat" id="chat">
+    <main class="chat" id="chat">
       <div class="workspace-intro">
         <p class="eyebrow">Knowledge workspace / 02</p>
         <h1>Ask your documents.</h1>
@@ -308,16 +346,16 @@
       </div>
       <div class="dayline">Today</div>
       <div class="msg bot">
-        <div class="avatar bot">CF</div>
+        <div class="avatar bot" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.5h8l3 3V19H7z"/><path d="M15 4.5v3h3M4 8v12h11M10 12h5M10 15h5"/></svg></div>
         <div>
           <div class="bubble">Ready when you are. Ask a specific question about a document you imported; the answer will show its processing steps below.</div>
           <div class="meta">For example: “How do I measure DC voltage with the Atlas M42?”</div>
         </div>
       </div>
-    </div>
+    </main>
 
     <div class="composer">
-      <textarea id="input" aria-label="Ask a question" placeholder="Ask a question about your documents…"></textarea>
+      <textarea id="input" name="question" autocomplete="off" aria-label="Ask a question" placeholder="Ask a question about your documents…"></textarea>
       <button class="send" id="send">Send</button>
     </div>
     <div class="hint">Shortcuts: <span class="kbd">Enter</span> to send, <span class="kbd">Shift</span>+<span class="kbd">Enter</span> for a new line</div>
@@ -334,6 +372,7 @@
     const apiPill = document.getElementById('apiPill');
     const btnClear = document.getElementById('btnClear');
     const streamToggle = document.getElementById('streamToggle');
+    const ASSISTANT_ICON = '<svg viewBox="0 0 24 24"><path d="M7 4.5h8l3 3V19H7z"/><path d="M15 4.5v3h3M4 8v12h11M10 12h5M10 15h5"/></svg>';
 
     // Session ID Logic
     let sessionId = localStorage.getItem('kb_session_id');
@@ -492,7 +531,7 @@
       if((text || '').trim().length > 0){
         const textEl = document.createElement('div');
         textEl.className = 'answer-text';
-        textEl.textContent = text;
+        textEl.textContent = text.trim();
         containerEl.appendChild(textEl);
       }else{
         const textEl = document.createElement('div');
@@ -530,11 +569,10 @@
     function addUserMsg(text){
       const html = `
         <div class="msg user">
-          <div>
+          <div class="message-body">
             <div class="bubble">${escapeHtml(text)}</div>
             <div class="meta">${nowTime()}</div>
           </div>
-          <div class="avatar">You</div>
         </div>
       `;
       chatEl.insertAdjacentHTML('beforeend', html);
@@ -544,11 +582,10 @@
     function addUserMsgWithTime(text, ts){
       const html = `
         <div class="msg user">
-          <div>
+          <div class="message-body">
             <div class="bubble">${escapeHtml(text)}</div>
             <div class="meta">${formatTime(ts)}</div>
           </div>
-          <div class="avatar">You</div>
         </div>
       `;
       chatEl.insertAdjacentHTML('beforeend', html);
@@ -559,8 +596,8 @@
       const id = 'bot-his-' + Math.random().toString(36).slice(2);
       const html = `
         <div class="msg bot" id="${id}">
-          <div class="avatar bot">CF</div>
-          <div>
+          <div class="avatar bot" aria-hidden="true">${ASSISTANT_ICON}</div>
+          <div class="message-body">
             <div class="bubble"><div class="answer"></div></div>
             <div class="meta">${formatTime(ts)}</div>
           </div>
@@ -579,88 +616,71 @@
       const id = 'bot-' + Math.random().toString(36).slice(2);
       const html = `
         <div class="msg bot" id="${id}">
-          <div class="avatar bot">CF</div>
-          <div style="min-width: 180px;">
-            <div class="bubble">
-              <span class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
-              <details class="progress" open>
-                <summary>Progress (waiting)</summary>
-                <ul></ul>
-              </details>
-            </div>
+          <div class="avatar bot" aria-hidden="true">${ASSISTANT_ICON}</div>
+          <div class="message-body">
+            <div class="bubble"><span class="typing" aria-label="Generating answer"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span></div>
+            <details class="progress is-running" open>
+              <summary><span class="progress-state"><span class="progress-indicator" aria-hidden="true"></span><span class="progress-title" aria-live="polite">Starting your search</span></span><span class="progress-count">Starting</span><span class="progress-chevron" aria-hidden="true"></span></summary>
+              <ol class="process-list"></ol>
+            </details>
             <div class="meta">${nowTime()}</div>
           </div>
         </div>
       `;
       chatEl.insertAdjacentHTML('beforeend', html);
+      const botMsgEl = document.getElementById(id);
+      botMsgEl.querySelector('details.progress').addEventListener('toggle', (event) => {
+        if(event.target.open) scrollToBottom();
+      });
       scrollToBottom();
-      return document.getElementById(id);
+      return botMsgEl;
     }
 
     function renderProgress(botMsgEl, doneList, runningList, status){
       const details = botMsgEl.querySelector('details.progress');
-      const summary = details.querySelector('summary');
-      const ul = details.querySelector('ul');
+      if(!details) return;
+      const title = details.querySelector('.progress-title');
+      const count = details.querySelector('.progress-count');
+      const list = details.querySelector('.process-list');
       const done = Array.isArray(doneList) ? doneList : [];
       const running = Array.isArray(runningList) ? runningList : [];
-      const totalDone = done.length;
-      const totalRun = running.length;
-
-      const statusMap = {
-        'processing': 'Processing',
-        'completed': 'Completed',
-        'failed': 'Failed',
-        'pending': 'Pending',
-      };
-      const displayStatus = statusMap[status] || status || 'unknown';
-
-      summary.textContent = `Progress (${totalDone} completed, ${totalRun} running, status: ${displayStatus})`;
-
-      const lines = [
-        ...done.map(x => `Done: ${x}`),
-        ...running.map(x => `Running: ${x}`)
-      ];
-      ul.innerHTML = '';
-      if(lines.length === 0){
-        ul.insertAdjacentHTML('beforeend', '<li>No progress yet</li>');
-      }else{
-        for(const line of lines){
-          ul.insertAdjacentHTML('beforeend', `<li>${escapeHtml(line)}</li>`);
-        }
+      details.className = `progress ${status === 'completed' ? 'is-complete' : status === 'failed' ? 'is-failed' : 'is-running'}`;
+      title.textContent = status === 'completed' ? 'Answer ready' : status === 'failed' ? 'Could not finish' : running[0] || 'Working through sources';
+      count.textContent = done.length ? `${done.length} ${done.length === 1 ? 'step' : 'steps'} completed` : running.length ? 'In progress' : 'Starting';
+      list.replaceChildren();
+      for(const [name, state] of [...done.map(name => [name, 'done']), ...running.map(name => [name, 'running'])]){
+        const item = document.createElement('li');
+        item.className = `is-${state}`;
+        item.textContent = name;
+        item.setAttribute('aria-label', `${state === 'done' ? 'Completed' : 'Running'}: ${name}`);
+        list.appendChild(item);
       }
+      if(status === 'completed' || status === 'failed') details.open = false;
+    }
+
+    function setProgressFinal(botMsgEl, failed = false){
+      const details = botMsgEl.querySelector('details.progress');
+      if(!details) return;
+      details.className = `progress ${failed ? 'is-failed' : 'is-complete'}`;
+      details.querySelector('.progress-title').textContent = failed ? 'Could not finish' : 'Answer ready';
+      const completed = details.querySelectorAll('.process-list .is-done').length;
+      details.querySelector('.progress-count').textContent = `${completed} ${completed === 1 ? 'step' : 'steps'} completed`;
+      details.open = false;
     }
 
     function finalizeBotAnswer(botMsgEl, answer, error, imageUrls){
       const bubble = botMsgEl.querySelector('.bubble');
-      const progress = botMsgEl.querySelector('details.progress');
       const err = (error || '').trim();
-
-      if(err){
-        const progressEl = progress ? progress : null;
-        if(progressEl) {
-            progressEl.remove();
-            progressEl.removeAttribute('open');
-        }
-        bubble.textContent = '';
-        const errEl = document.createElement('div');
-        errEl.className = 'answer';
-        errEl.textContent = `The request failed:\n${err}`;
-        bubble.appendChild(errEl);
-        if(progressEl) bubble.appendChild(progressEl);
-        return;
-      }
-
-      const progressEl = progress ? progress : null;
-      if(progressEl) {
-        progressEl.remove();
-        progressEl.removeAttribute('open');
-      }
       bubble.textContent = '';
       const answerEl = document.createElement('div');
       answerEl.className = 'answer';
       bubble.appendChild(answerEl);
-      renderAnswerWithImages(answerEl, answer || '', imageUrls || []);
-      if(progressEl) bubble.appendChild(progressEl);
+      if(err){
+        answerEl.textContent = `The request failed: ${err}`;
+      }else{
+        renderAnswerWithImages(answerEl, answer || '', imageUrls || []);
+      }
+      setProgressFinal(botMsgEl, Boolean(err));
     }
 
     async function apiHealth(){
@@ -736,7 +756,6 @@
     }
 
     async function onSend(){
-      console.log('[perf] A onSend start', performance.now());
       const text = (inputEl.value || '').trim();
       if(!text) return;
       inputEl.value = '';
@@ -746,9 +765,7 @@
 
       try{
         const isStream = streamToggle.checked;
-        console.log('[perf] B submitQuery start', performance.now(), { isStream });
         const data = await submitQuery(text);
-        console.log('[perf] B submitQuery end', performance.now(), data);
 
         renderProgress(botMsgEl, [], [], 'pending');
 
@@ -771,7 +788,6 @@
         }
 
         const es = new EventSource(`${API_BASE}/stream/${session_id}`);
-        console.log('[perf] C EventSource created', performance.now(), { session_id });
         let rawAnswerText = '';
 
         es.addEventListener('progress', (e) => {
@@ -791,6 +807,8 @@
             const d = JSON.parse(e.data || '{}');
             const delta = d.delta || '';
             if(delta){
+              const typing = botMsgEl.querySelector('.typing');
+              if(typing) typing.remove();
               rawAnswerText += delta;
               renderAnswerWithImages(answerEl, rawAnswerText, []);
               scrollToBottom();
@@ -801,18 +819,13 @@
         es.addEventListener('final', (e) => {
           const typing = botMsgEl.querySelector('.typing');
           if(typing) typing.remove();
-          const progress = botMsgEl.querySelector('details.progress');
-          if(progress) progress.removeAttribute('open');
-          if(progress){
-            const summary = progress.querySelector('summary');
-            summary.textContent = summary.textContent.replace(/status: [^)]+/, 'status: Completed');
-          }
 
           try{
             const d = JSON.parse(e.data || '{}');
             const finalText = (d && typeof d.answer === 'string' && d.answer.trim().length > 0) ? d.answer : (rawAnswerText || answerEl.textContent || '');
             renderAnswerWithImages(answerEl, finalText, d.image_urls || []);
           }catch(_){}
+          setProgressFinal(botMsgEl);
           es.close();
           sendBtn.disabled = false;
         });
@@ -820,18 +833,13 @@
         es.addEventListener('final_answer', (e) => {
           const typing = botMsgEl.querySelector('.typing');
           if(typing) typing.remove();
-          const progress = botMsgEl.querySelector('details.progress');
-          if(progress) progress.removeAttribute('open');
-          if(progress){
-            const summary = progress.querySelector('summary');
-            summary.textContent = summary.textContent.replace(/status: [^)]+/, 'status: Completed');
-          }
 
           try{
             const d = JSON.parse(e.data || '{}');
             const finalText = (d && typeof d.answer === 'string' && d.answer.trim().length > 0) ? d.answer : (rawAnswerText || answerEl.textContent || '');
             renderAnswerWithImages(answerEl, finalText, d.image_urls || []);
           }catch(_){}
+          setProgressFinal(botMsgEl);
           es.close();
           sendBtn.disabled = false;
         });
@@ -839,8 +847,6 @@
         es.addEventListener('error', (e) => {
           const typing = botMsgEl.querySelector('.typing');
           if(typing) typing.remove();
-          const progress = botMsgEl.querySelector('details.progress');
-          if(progress) progress.removeAttribute('open');
 
           try{
             const msg = e && e.data ? (JSON.parse(e.data).error || 'SSE connection interrupted') : 'SSE connection interrupted';
@@ -850,15 +856,16 @@
             rawAnswerText += `\n\n(Error: SSE connection interrupted)`;
             renderAnswerWithImages(answerEl, rawAnswerText, []);
           }
+          setProgressFinal(botMsgEl, true);
           es.close();
           sendBtn.disabled = false;
         });
       }catch(e){
         const bubble = botMsgEl.querySelector('.bubble');
-        const progress = botMsgEl.querySelector('details.progress');
         const typing = botMsgEl.querySelector('.typing');
         if(typing) typing.remove();
-        bubble.innerHTML = `Request failed: ${escapeHtml(e.message || e)}\n\n` + progress.outerHTML;
+        bubble.textContent = `Request failed: ${e.message || e}`;
+        setProgressFinal(botMsgEl, true);
         sendBtn.disabled = false;
       }
     }
@@ -892,7 +899,9 @@
     apiHealth();
     setInterval(apiHealth, 5000);
     loadHistory();
-    setTimeout(() => inputEl.focus(), 200);
+    if(window.matchMedia('(pointer: fine) and (min-width: 760px)').matches){
+      setTimeout(() => inputEl.focus(), 200);
+    }
   </script>
 </body>
 </html>
