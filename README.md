@@ -110,4 +110,10 @@ Invoke-RestMethod -Uri http://127.0.0.1:8001/query -Method Post -ContentType 'ap
 - Web search is optional and needs an MCP endpoint. Knowledge-graph querying is not connected to the current answer workflow.
 - The included services are configured for local development and do not implement user authentication.
 
-If startup fails, first check that `LLM_DEFAULT_TEMPERATURE` contains a number and the model endpoint settings are present. If import or search cannot connect to storage, run `docker compose -f compose.local.yml ps` and compare the addresses in `.env` with the ports above. If PDF import fails while Markdown works, configure MinerU before retrying the PDF.
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| A service fails during startup | Set the model endpoint values in `.env` and keep `LLM_DEFAULT_TEMPERATURE` numeric. |
+| Import or search cannot reach storage | Run `docker compose -f compose.local.yml ps` and compare the addresses in `.env` with the ports above. |
+| PDF import fails while Markdown works | Configure `MINERU_BASE_URL` and `MINERU_API_TOKEN` before retrying the PDF. |
